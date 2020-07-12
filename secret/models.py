@@ -30,5 +30,8 @@ class Secret(models.Model):
 
     objects = SecretManager()
 
+    def __str__(self):
+        return self.name
+
     def get_absolute_url(self):
         return reverse('secret:detail', args=[self.id])
