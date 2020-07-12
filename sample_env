@@ -1,0 +1,7 @@
+DEBUG=on
+SECRET_KEY=please-set-me
+DATABASE_URL=postgres://localhost/secrets
+
+AUTHBROKER_URL=speak-to-webops
+AUTHBROKER_CLIENT_ID=speak-to-webops
+AUTHBROKER_CLIENT_SECRET=speak-to-webops

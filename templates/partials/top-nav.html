@@ -1,0 +1,13 @@
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <a class="navbar-brand" href="/">Password manager</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      {% if request.user.is_authenticated %}
+      <div class="collapse navbar-collapse justify-content-end"">
+        <a href="/logout/" class="btn btn-secondary">{{ request.user.email }}, logout</a>
+      </div>
+      {% endif %}
+
+    </nav>

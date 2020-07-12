@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block page_title %}{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+{% include 'partials/top-nav.html' %}
+
+{% block page_content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-2">
+            <nav id="sidebar">
+                {% block sidenav %}
+                    {% include 'partials/side-nav.html' %}
+                {% endblock %}
+            </nav>
+        </div>
+
+        <div class="col">
+            {% block main %}
+            {% endblock %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+<script type="text/javascript">
+    {% block javascript %}
+    {% endblock %}
+</script>
+
+</body>
+</html>
