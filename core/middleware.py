@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.shortcuts import redirect
-from django.urls import resolve
+from django.urls import resolve, reverse
 
 
 class ProtectAllViewsMiddleware:
@@ -12,7 +12,7 @@ class ProtectAllViewsMiddleware:
                 not request.user.is_authenticated and request.path not in getattr(settings, 'PUBLIC_VIEWS', []):
             return redirect('authbroker_client:login')
 
-        if request.user.is_authenticated and not request.user.is_active:
+        if request.user.is_authenticated and not request.user.is_active and request.path != reverse('user:disabled'):
             return redirect('user:disabled')
 
         response = self.get_response(request)
