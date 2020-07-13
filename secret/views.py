@@ -53,6 +53,7 @@ class SecretCreateView(CreateView):
     success_url = reverse_lazy('secret:list')
 
     def form_valid(self, form):
-        Audit.objects.create(user=self.request.user, secret=self.get_object(), action=Actions.created_secret)
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        Audit.objects.create(user=self.request.user, secret=self.object, action=Actions.created_secret)
+        return response
 

@@ -15,6 +15,6 @@
       <a class="nav-link {% if filter_group == group.name %} disabled{% endif %}" href="{% url 'secret:list' %}?group={{ group.name }}">{% if filter_group == group.name %}&raquo; {% endif %}{{ group.name }}</a>
     </li>
     {% empty %}
-    <li>class="nav-item">You do not belong to any groups.</li>
+    <li class="nav-item">You do not belong to any groups.</li>
     {% endfor %}
 </ul>
