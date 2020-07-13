@@ -13,7 +13,7 @@ class ProtectAllViewsMiddleware:
             return redirect('authbroker_client:login')
 
         if request.user.is_authenticated and not request.user.is_active:
-            redirect('account-disabled')
+            return redirect('user:disabled')
 
         response = self.get_response(request)
 
