@@ -147,7 +147,10 @@ LOGIN_URL = reverse_lazy('authbroker_client:login')
 LOGIN_REDIRECT_URL = reverse_lazy('secret:list')
 LOGOUT_REDIRECT_URL = reverse_lazy('user:logged-out')
 
-STAFF_SSO_USE_EMAIL_ID = True
+STAFF_SSO_ID_FIELD = 'email_user_id'
+STAFF_SSO_USER_CREATE_FUNC = lambda profile: dict(is_active=True,
+                                                  first_name=profile['first_name'],
+                                                  last_name=profile['last_name'])
 
 PUBLIC_VIEWS = [
     reverse_lazy('user:logged-out'),
