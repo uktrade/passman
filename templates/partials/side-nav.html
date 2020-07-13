@@ -1,12 +1,14 @@
 <div class="md-form active-pink active-pink-2 mb-3 mt-0">
-  <input class="form-control" type="text" placeholder="Search" aria-label="Search">
+  <form method="get" action="{% url 'secret:list' %}">
+    <input class="form-control" type="text" placeholder="Search" aria-label="Search" id="search" name="name" {% >
+  </form>
 </div>
 
 <h5>Groups</h5>
 
 <ul class="nav flex-column">
     <li class="nav-item">
-      <a class="nav-link {% if not filter_group %} disabled{% endif %}" href="{% url 'secret:list' %}">{% if not filter_group %}&raquo; {% endif %}Show all</a>
+      <a class="nav-link {% if not filter_group and not search_term %} disabled{% endif %}" href="{% url 'secret:list' %}">{% if not filter_group and not search_term %}&raquo; {% endif %}Show all</a>
     </li>
     {% for group in request.user.get_permitted_groups %}
     <li class="nav-item" >
