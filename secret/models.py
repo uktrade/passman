@@ -4,6 +4,8 @@ from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 
+from django_cryptography.fields import encrypt
+
 
 class SecretManager(models.Manager):
     def filter_by_group(self, group):
@@ -25,8 +27,8 @@ class Secret(models.Model):
 
     url = models.URLField(blank=True)
     username = models.CharField(max_length=255, blank=True)
-    password = models.CharField(max_length=255, blank=True)
-    details = models.TextField(blank=True)
+    password = encrypt(models.CharField(max_length=255, blank=True))
+    details = encrypt(models.TextField(blank=True))
 
     objects = SecretManager()
 
@@ -35,3 +37,6 @@ class Secret(models.Model):
 
     def get_absolute_url(self):
         return reverse('secret:detail', args=[self.id])
+
+    class Meta:
+        ordering = ('name',)

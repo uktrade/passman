@@ -6,6 +6,7 @@ psycopg2
 -e git+https://github.com/uktrade/django-staff-sso-client/@add_email_id_support#egg=authbroker_client
 django-crispy-forms
 django-filter
+django-cryptography
 
 whitenoise
 gunicorn

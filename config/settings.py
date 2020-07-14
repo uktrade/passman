@@ -168,3 +168,8 @@ MESSAGE_TAGS = {
     messages.INFO: 'success',
     messages.ERROR: 'danger',
 }
+
+# django cryptography
+
+CRYPTOGRAPHY_KEY = env('CRYPTOGRAPHY_KEY', default=SECRET_KEY)
+CRYPTOGRAPHY_SALT = env('CRYPTOGRAPHY_SALT')
