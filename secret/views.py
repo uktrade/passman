@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse_lazy
 
@@ -35,6 +36,7 @@ class SecretDetailView(UpdateView):
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
+        messages.add_message(self.request, messages.INFO, 'Password updated')
         Audit.objects.create(user=self.request.user, secret=self.get_object(), action=Actions.updated_secret)
         return super().form_valid(form)
 
@@ -51,8 +53,10 @@ class SecretCreateView(CreateView):
     model = Secret
     form_class = SecretForm
     success_url = reverse_lazy('secret:list')
+    ordering = ['name']
 
     def form_valid(self, form):
+        messages.add_message(self.equest, messages.INFO, 'Password created')
         response = super().form_valid(form)
         Audit.objects.create(user=self.request.user, secret=self.object, action=Actions.created_secret)
         return response

@@ -1,5 +1,6 @@
 import os
 
+from django.contrib.messages import constants as messages
 from django.urls import reverse_lazy
 
 import dj_database_url
@@ -160,3 +161,10 @@ PUBLIC_VIEWS = [
 # crispy forms config
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+# messages config
+
+MESSAGE_TAGS = {
+    messages.INFO: 'success',
+    messages.ERROR: 'danger',
+}
