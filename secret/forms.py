@@ -1,9 +1,9 @@
-from django.forms import ModelForm
+from django import forms
 
 from .models import Secret
 
 
-class SecretForm(ModelForm):
+class SecretForm(forms.ModelForm):
     class Meta:
         model = Secret
         fields = [

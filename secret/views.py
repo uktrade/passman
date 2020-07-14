@@ -11,7 +11,7 @@ from .models import Secret
 
 
 class SecretListView(FilterView):
-    paginate_by = 100
+    paginate_by = 10
     filterset_class = SecretFilter
     template_name = 'secret/secret_list.html'
 
@@ -56,7 +56,7 @@ class SecretCreateView(CreateView):
     ordering = ['name']
 
     def form_valid(self, form):
-        messages.add_message(self.equest, messages.INFO, 'Password created')
+        messages.add_message(self.request, messages.INFO, 'Password created')
         response = super().form_valid(form)
         Audit.objects.create(user=self.request.user, secret=self.object, action=Actions.created_secret)
         return response
