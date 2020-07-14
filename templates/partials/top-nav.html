@@ -6,7 +6,7 @@
 
       {% if request.user.is_authenticated %}
       <div class="collapse navbar-collapse justify-content-end"">
-        <a href="/logout/" class="btn btn-secondary">{{ request.user.email }}, logout</a>
+        <a href="/logout/" class="btn btn-secondary">{{ request.user.get_full_name }}, logout</a>
       </div>
       {% endif %}
 

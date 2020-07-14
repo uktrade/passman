@@ -49,6 +49,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Return a list of groups that this user is allowed to access"""
 
         if self.is_superuser:
-            return Group.objects.all()
+            return Group.objects.all().order_by('name')
         else:
-            return self.groups.all()
+            return self.groups.all().order_by('name')
+
+    def get_full_name(self):
+        return f'{self.first_name} {self.last_name}'
