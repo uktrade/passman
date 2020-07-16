@@ -28,7 +28,7 @@ class SecretListView(FilterView):
         return context
 
 
-@method_decorator(sensitive_post_parameters('password', 'details'))
+@method_decorator(sensitive_post_parameters('password', 'details'),  name='dispatch')
 class SecretDetailView(UpdateView):
     model = Secret
     form_class = SecretForm
@@ -52,7 +52,7 @@ class SecretDetailView(UpdateView):
         return context
 
 
-@method_decorator(sensitive_post_parameters('password', 'details'))
+@method_decorator(sensitive_post_parameters('password', 'details'), name='dispatch')
 class SecretCreateView(CreateView):
     model = Secret
     form_class = SecretForm

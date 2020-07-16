@@ -1,15 +1,9 @@
 import uuid
 
 from django.db import models
-from django.db.models import Q
 from django.urls import reverse
 
 from django_cryptography.fields import encrypt
-
-
-class SecretManager(models.Manager):
-    def filter_by_group(self, group):
-        return self.filter(Q(owner_group=group) | Q(viewer_groups=group))
 
 
 class Secret(models.Model):
@@ -29,8 +23,6 @@ class Secret(models.Model):
     username = models.CharField(max_length=255, blank=True)
     password = encrypt(models.CharField(max_length=255, blank=True))
     details = encrypt(models.TextField(blank=True))
-
-    objects = SecretManager()
 
     def __str__(self):
         return self.name
