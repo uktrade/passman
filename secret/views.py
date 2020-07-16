@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
 
 from django_filters.views import FilterView
 
@@ -26,6 +28,7 @@ class SecretListView(FilterView):
         return context
 
 
+@method_decorator(sensitive_post_parameters('password', 'details'))
 class SecretDetailView(UpdateView):
     model = Secret
     form_class = SecretForm
@@ -49,6 +52,7 @@ class SecretDetailView(UpdateView):
         return context
 
 
+@method_decorator(sensitive_post_parameters('password', 'details'))
 class SecretCreateView(CreateView):
     model = Secret
     form_class = SecretForm
