@@ -1,6 +1,6 @@
 <div class="md-form active-pink active-pink-2 mb-3 mt-0">
   <form method="get" action="{% url 'secret:list' %}">
-    <input class="form-control" type="text" placeholder="Search" aria-label="Search" id="search" name="name" {% >
+    <input class="form-control" type="text" placeholder="Search" aria-label="Search" id="search" name="name" {% if search_term %}value="{{ search_term }}"{% endif %}>
   </form>
 </div>
 
