@@ -8,7 +8,7 @@
 
 <ul class="nav flex-column">
     <li class="nav-item">
-      <a class="nav-link {% if not filter_group and not search_term %} disabled{% endif %}" href="{% url 'secret:list' %}">{% if not filter_group and not search_term %}&raquo; {% endif %}Show all</a>
+      <a class="nav-link {% if not filter_group and not search_term  and page_obj %} disabled{% endif %}" href="{% url 'secret:list' %}">{% if not filter_group and not search_term and page_obj %}&raquo; {% endif %}Show all</a>
     </li>
     {% for group in request.user.get_permitted_groups %}
     <li class="nav-item" >

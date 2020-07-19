@@ -7,6 +7,7 @@ psycopg2
 django-crispy-forms
 django-filter
 django-cryptography
+django-guardian
 
 whitenoise
 gunicorn
