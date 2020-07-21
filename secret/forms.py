@@ -69,7 +69,7 @@ class SecretCreateForm(SecretUpdateForm):
         super().__init__(*args, **kwargs)
 
         self.helper.layout[-1] = FormActions(
-            Submit('save', 'Save password'),
+            Submit('save', 'Save and continue'),
         )
 
 
@@ -87,8 +87,14 @@ class SecretPermissionsForm(forms.Form):
 
         return cleaned_data
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, render_hidden_fields=False, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if render_hidden_fields:
+            self.fields['user'].widget = forms.HiddenInput()
+            self.fields['group'].widget = forms.HiddenInput()
+            self.fields['permission'].widget = forms.HiddenInput()
+
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(

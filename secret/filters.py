@@ -18,7 +18,7 @@ class SecretFilter(django_filters.FilterSet):
         else:
             group = self.request.user.groups.get(name=value)
 
-        return get_objects_for_group(group, ['view_secret', 'change_secret'], queryset)
+        return get_objects_for_group(group, ['view_secret', 'change_secret'], queryset, any_perm=True)
 
     @property
     def qs(self):
@@ -27,7 +27,7 @@ class SecretFilter(django_filters.FilterSet):
         if self.request.user.is_superuser:
             return parent
         else:
-            return get_objects_for_user(self.request.user, ['view_secret', 'change_secret'], parent)
+            return get_objects_for_user(self.request.user, ['view_secret', 'change_secret'], parent, any_perm=True)
 
     class Meta:
         model = Secret

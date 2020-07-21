@@ -1,17 +1,17 @@
-from django.contrib.auth.models import Group
 from django.contrib import messages
 from django.views.generic import FormView, TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse
+from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 
 from django_filters.views import FilterView
-from guardian.shortcuts import assign_perm, get_groups_with_perms, get_users_with_perms, get_perms
+from guardian.shortcuts import assign_perm, get_groups_with_perms, get_users_with_perms, get_perms, remove_perm
+from guardian.decorators import permission_required_or_403
 
 from audit.models import Actions, Audit
-from user.models import User
 from .filters import SecretFilter
 from .forms import EDIT_SECRET_PERMISSION, VIEW_SECRET_PERMISSION, PERMISSION_CHOICES
 from .forms import SecretCreateForm, SecretUpdateForm, SecretPermissionsForm
@@ -53,6 +53,8 @@ class SecretCreateView(CreateView):
         return http_response
 
 
+@method_decorator(permission_required_or_403('secret.change_secret', (Secret, 'pk', 'pk')),  name='post')
+@method_decorator(permission_required_or_403('secret.view_secret', (Secret, 'pk', 'pk')),  name='get')
 @method_decorator(sensitive_post_parameters('password', 'details'),  name='dispatch')
 class SecretDetailView(UpdateView):
     model = Secret
@@ -83,6 +85,7 @@ class SecretDetailView(UpdateView):
         return context
 
 
+@method_decorator(permission_required_or_403('secret.view_secret', (Secret, 'pk', 'pk')),  name='dispatch')
 class SecretAuditView(TemplateView):
     template_name = 'secret/secret_audit.html'
 
@@ -96,6 +99,57 @@ class SecretAuditView(TemplateView):
         return context
 
 
+@method_decorator(permission_required_or_403('secret.change_secret', (Secret, 'pk', 'pk')),  name='post')
+@method_decorator(permission_required_or_403('secret.change_secret', (Secret, 'pk', 'pk')),  name='get')
+class SecretPermissionsDeleteView(DetailView):
+    model = Secret
+    template_name = 'secret/confirm-delete.html'
+    object = None
+
+    def redirect_to_permissions_list(self, *message_params):
+        messages.add_message(self.request, *message_params)
+        return redirect('secret:permissions', **self.kwargs)
+
+    def get(self, request, *args, **kwargs):
+        form = SecretPermissionsForm(request.GET, render_hidden_fields=True)
+        if not form.is_valid():
+            return self.redirect_to_permissions_list(messages.ERROR, 'Invalid parameters')
+
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+
+        context.update(form.cleaned_data)
+        context['permission_display'] = dict(PERMISSION_CHOICES)[context['permission']]
+        context['form'] = form
+
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+
+        form = SecretPermissionsForm(request.POST)
+        if not form.is_valid():
+            return self.redirect_to_permissions_list(messages.ERROR, 'Invalid parameters')
+
+        remove_perm(
+            form.cleaned_data['permission'],
+            form.cleaned_data['user'] or form.cleaned_data['group'],
+            self.get_object()
+        )
+
+        return self.redirect_to_permissions_list(messages.INFO, 'Permission removed')
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        context['pk'] = self.kwargs['pk']
+        context['tab'] = 'permissions'
+
+        return context
+
+
+@method_decorator(permission_required_or_403('secret.change_secret', (Secret, 'pk', 'pk')),  name='post')
+@method_decorator(permission_required_or_403('secret.view_secret', (Secret, 'pk', 'pk')),  name='get')
 class SecretPermissionsView(FormView):
     template_name = 'secret/permissions.html'
     form_class = SecretPermissionsForm
@@ -125,7 +179,8 @@ class SecretPermissionsView(FormView):
 
         def _flatten_perms(items):
             """change `{user: [perm1, perm2]}` to `[(user, perm1), (user, perm2)]]` we're also removing additional
-            perms i.e. superusers have additional perms: add_secret, delete_secret which aren't relevant"""
+            perms i.e. superusers have additional perms: add_secret, delete_secret which aren't relevant, so they
+            are skipped. We also provide a display-friendly perm-name."""
 
             return [
                 (user, (perm, perm_display.get(perm, perm))) for user, perms in items.items() for perm in perms
@@ -138,49 +193,11 @@ class SecretPermissionsView(FormView):
         context['tab'] = 'permissions'
 
         secret = Secret.objects.get(pk=pk)
+
         context['users'] = _flatten_perms(get_users_with_perms(
             secret, attach_perms=True,
             only_with_perms_in=[EDIT_SECRET_PERMISSION, VIEW_SECRET_PERMISSION]
         ))
         context['groups'] = _flatten_perms(get_groups_with_perms(secret, attach_perms=True))
-
-        return context
-
-
-class SecretPermissionsDeleteView(DetailView):
-    model = Secret
-    template_name = 'secret/confirm-delete.html'
-
-    def _get_params(self, request):
-        user_id = request.GET.get('user', None)
-        group_name = request.GET.get('group', None)
-        permission = request.GET.get('permission', None)
-
-        user, group = None, None
-
-        if user_id:
-            user = User.objects.get(email=user_id)
-        elif group_name:
-            group = Group.objects.get(name=group_name)
-        else:
-            raise Exception('No user or group set')
-
-        if permission not in PERMISSION_CHOICES:
-            raise Exception('Invalid permission')
-
-        return user, group, permission
-
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        pass
-
-    def get_context_data(self, **kwargs):
-
-        context = super().get_context_data(**kwargs)
-
-        context['pk'] = self.kwargs['pk']
-        context['tab'] = 'permissions'
 
         return context
