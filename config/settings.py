@@ -45,8 +45,7 @@ INSTALLED_APPS = [
     'guardian',
     'django_otp',
     'django_otp.plugins.otp_totp',
-    'django_otp.plugins.otp_hotp',
-    'django_otp.plugins.otp_static',
+    'twofactor',
     'audit',
     'user',
     'secret',
@@ -184,3 +183,10 @@ CRYPTOGRAPHY_SALT = env('CRYPTOGRAPHY_SALT')
 # guardian config
 
 GUARDIAN_MONKEY_PATCH = False
+
+# OTP / 2FA config
+
+REQUIRE_2FA = True
+OTP_LOGIN_URL = reverse_lazy('twofactor:verify')
+OTP_HOTP_ISSUER = env('OTP_HOTP_ISSUER', default='Passman')
+OTP_TOTP_ISSUER = OTP_HOTP_ISSUER

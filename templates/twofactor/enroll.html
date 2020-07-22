@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block main %}
+
+<h4 class="pt-3">Set up 2-factor authentication</h4>
+
+{% if device_confirmed %}
+    <p>You have already enabled 2-factor authentication.</p>
+{% else %}
+
+<p class="pt-3">
+    You must enable 2-factor authentication to continue.
+</p>
+
+
+<svg style="height:220px; width: 220px;">
+    {{ qrcode.read | safe }}
+</svg>
+
+<form method="post" action="{{ request.path }}">
+    {% csrf_token %}
+    {{ form | crispy }}
+    <button type="submit" class="btn btn-danger">Verify</button>
+</form>
+
+{% endif %}
+{% endblock %}}
