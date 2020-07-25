@@ -6,6 +6,11 @@
 
 <h4 class="pt-3">2-factor verification</h4>
 
-{% crispy form %}
+<form method="post" action="{{ request.path }}">
+    {{ form | crispy }}
+    {% csrf_token %}
+    <input type="hidden" value="{{ next }}">
+    <button type="submit" class="btn btn-primary">Verify</button>
+</form>
 
 {% endblock %}}
