@@ -34,15 +34,16 @@ class SecretListView(FilterView):
 
         return context
 
-@method_decorator(otp_required, name='dispatch')
+
 @method_decorator(sensitive_post_parameters('password', 'details'), name='dispatch')
+@method_decorator(otp_required, name='dispatch')
 class SecretCreateView(CreateView):
     model = Secret
     form_class = SecretCreateForm
     ordering = ['name']
 
     def form_valid(self, form):
-        messages.add_message(self.request, messages.INFO, 'Password created')
+        messages.info(self.request, 'Password created')
 
         http_response = super().form_valid(form)
 
@@ -54,21 +55,21 @@ class SecretCreateView(CreateView):
         return http_response
 
 
+@method_decorator(sensitive_post_parameters('password', 'details'),  name='dispatch')
 @method_decorator(otp_required, name='dispatch')
 @method_decorator(permission_required_or_403('secret.change_secret', (Secret, 'pk', 'pk')),  name='post')
 @method_decorator(permission_required_or_403('secret.view_secret', (Secret, 'pk', 'pk')),  name='get')
-@method_decorator(sensitive_post_parameters('password', 'details'),  name='dispatch')
 class SecretDetailView(UpdateView):
     model = Secret
     form_class = SecretUpdateForm
 
     def get(self, request, *args, **kwargs):
-        create_audit_event(self.request.user, Actions.viewed_secret, secret=self.get_object(), rollup=True)
+        create_audit_event(self.request.user, Actions.viewed_secret, secret=self.get_object(), report_once=True)
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
-        messages.add_message(self.request, messages.INFO, 'Password updated')
-        create_audit_event(self.request.user, Actions.updated_secret, secret=self.get_object(), rollup=True)
+        messages.info(self.request, 'Password updated')
+        create_audit_event(self.request.user, Actions.updated_secret, secret=self.get_object())
 
         return super().form_valid(form)
 
@@ -147,7 +148,6 @@ class SecretPermissionsDeleteView(DetailView):
             self.request.user,
             Actions.remove_permission,
             secret=self.get_object(),
-            rollup=True,
             description=f'{form.cleaned_data["permission"]} removed for {object}'
         )
 
@@ -193,11 +193,10 @@ class SecretPermissionsView(FormView):
             self.request.user,
             Actions.add_permission,
             secret=secret,
-            rollup=True,
             description=f'{form.cleaned_data["permission"]} granted to {assignee}',
         )
 
-        messages.add_message(self.request, messages.INFO, 'Permission added')
+        messages.info(self.request,'Permission added')
         return http_response
 
     def get_context_data(self, **kwargs):

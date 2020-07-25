@@ -190,3 +190,7 @@ REQUIRE_2FA = True
 OTP_LOGIN_URL = reverse_lazy('twofactor:verify')
 OTP_HOTP_ISSUER = env('OTP_HOTP_ISSUER', default='Passman')
 OTP_TOTP_ISSUER = OTP_HOTP_ISSUER
+
+# audit event config
+
+AUDIT_EVENT_REPEAT_AFTER_MINUTES = env.int('AUDIT_EVENT_REPEAT_AFTER_MINUTES', default=12*60)
