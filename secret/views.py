@@ -12,7 +12,7 @@ from guardian.shortcuts import assign_perm, get_groups_with_perms, get_users_wit
 from guardian.decorators import permission_required_or_403
 from django_otp.decorators import otp_required
 
-from audit.models import Actions, Audit
+from audit.models import Actions, Audit, create_audit_event
 from .filters import SecretFilter
 from .forms import EDIT_SECRET_PERMISSION, VIEW_SECRET_PERMISSION, PERMISSION_CHOICES
 from .forms import SecretCreateForm, SecretUpdateForm, SecretPermissionsForm
@@ -50,7 +50,7 @@ class SecretCreateView(CreateView):
         assign_perm(EDIT_SECRET_PERMISSION, self.request.user, self.object)
         assign_perm(VIEW_SECRET_PERMISSION, self.request.user, self.object)
 
-        Audit.objects.create(user=self.request.user, secret=self.object, action=Actions.created_secret)
+        create_audit_event(self.request.user, Actions.created_secret, secret=self.object)
         return http_response
 
 
@@ -63,12 +63,13 @@ class SecretDetailView(UpdateView):
     form_class = SecretUpdateForm
 
     def get(self, request, *args, **kwargs):
-        Audit.objects.create(user=self.request.user, secret=self.get_object(), action=Actions.viewed_secret)
+        create_audit_event(self.request.user, Actions.viewed_secret, secret=self.get_object(), rollup=True)
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
         messages.add_message(self.request, messages.INFO, 'Password updated')
-        Audit.objects.create(user=self.request.user, secret=self.get_object(), action=Actions.updated_secret)
+        create_audit_event(self.request.user, Actions.updated_secret, secret=self.get_object(), rollup=True)
+
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -134,10 +135,20 @@ class SecretPermissionsDeleteView(DetailView):
         if not form.is_valid():
             return self.redirect_to_permissions_list(messages.ERROR, 'Invalid parameters')
 
+        object = form.cleaned_data['user'] or form.cleaned_data['group']
+
         remove_perm(
             form.cleaned_data['permission'],
-            form.cleaned_data['user'] or form.cleaned_data['group'],
+            object,
             self.get_object()
+        )
+
+        create_audit_event(
+            self.request.user,
+            Actions.remove_permission,
+            secret=self.get_object(),
+            rollup=True,
+            description=f'{form.cleaned_data["permission"]} removed for {object}'
         )
 
         return self.redirect_to_permissions_list(messages.INFO, 'Permission removed')
@@ -175,6 +186,16 @@ class SecretPermissionsView(FormView):
             assign_perm(VIEW_SECRET_PERMISSION, assignee, secret)
 
         assign_perm(form.cleaned_data['permission'], assignee, secret)
+
+        secret = Secret.objects.get(pk=self.kwargs['pk'])
+
+        create_audit_event(
+            self.request.user,
+            Actions.add_permission,
+            secret=secret,
+            rollup=True,
+            description=f'{form.cleaned_data["permission"]} granted to {assignee}',
+        )
 
         messages.add_message(self.request, messages.INFO, 'Permission added')
         return http_response

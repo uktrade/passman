@@ -7,6 +7,8 @@ class Actions(StrEnum):
     created_secret = 'Created'
     updated_secret = 'Updated'
     viewed_secret = 'Viewed'
+    add_permission = 'Add permission'
+    remove_permission = 'Remove permission'
 
 
 class Audit(models.Model):
@@ -18,3 +20,16 @@ class Audit(models.Model):
 
     class Meta:
         verbose_name_plural = 'audit'
+
+
+def create_audit_event(user, action, description=None, secret=None, repeat_once=False):
+    """
+    Create an audit event
+    """
+
+    Audit.objects.create(
+        user=user,
+        action=action,
+        description=description or '',
+        secret=secret,
+    )
