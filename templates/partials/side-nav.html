@@ -1,13 +1,7 @@
-<div class="md-form active-pink active-pink-2 mb-3 mt-0">
-  <form method="get" action="{% url 'secret:list' %}">
-    <input class="form-control" type="text" placeholder="Search" aria-label="Search" id="search" name="name" {% if search_term %}value="{{ search_term }}"{% endif %}>
-  </form>
-</div>
-
 <h5>Groups</h5>
 
 <ul class="nav flex-column">
-    <li class="nav-item">
+    <li class="nav-item border-bottom">
       <a class="nav-link {% if not filter_group and not search_term  and page_obj %} disabled{% endif %}" href="{% url 'secret:list' %}">{% if not filter_group and not search_term and page_obj %}&raquo; {% endif %}Show all</a>
     </li>
     {% for group in request.user.get_permitted_groups %}

@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.contrib import messages
 from django.views.generic import FormView, TemplateView
+from django.views.generic.base import ContextMixin
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse
@@ -14,13 +16,21 @@ from django_otp.decorators import otp_required
 
 from audit.models import Actions, Audit, create_audit_event
 from .filters import SecretFilter
-from .forms import EDIT_SECRET_PERMISSION, VIEW_SECRET_PERMISSION, PERMISSION_CHOICES
-from .forms import SecretCreateForm, SecretUpdateForm, SecretPermissionsForm
+from .forms import (
+    EDIT_SECRET_PERMISSION,
+    VIEW_SECRET_PERMISSION,
+    PERMISSION_CHOICES,
+    SecretCreateForm,
+    SecretUpdateForm,
+    SecretPermissionsForm,
+    SecretGroupPermissionsForm,
+    SecretUserPermissionsForm
+)
 from .models import Secret
 
 
 class SecretListView(FilterView):
-    paginate_by = 10
+    paginate_by = settings.SECRET_PAGINATION_ITEMS_PER_PAGE
     filterset_class = SecretFilter
     template_name = 'secret/secret_list.html'
 
@@ -43,7 +53,7 @@ class SecretCreateView(CreateView):
     ordering = ['name']
 
     def form_valid(self, form):
-        messages.info(self.request, 'Password created')
+        messages.info(self.request, 'Secret created')
 
         http_response = super().form_valid(form)
 
@@ -68,16 +78,10 @@ class SecretDetailView(UpdateView):
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
-        messages.info(self.request, 'Password updated')
+        messages.info(self.request, 'Secret updated')
         create_audit_event(self.request.user, Actions.updated_secret, secret=self.get_object())
 
         return super().form_valid(form)
-
-    def get_success_url(self):
-        if 'save' in self.request.POST:
-            self.success_url = reverse('secret:list')
-
-        return super().get_success_url()
 
     def get_context_data(self, **kwargs):
 
@@ -117,7 +121,7 @@ class SecretPermissionsDeleteView(DetailView):
         return redirect('secret:permissions', **self.kwargs)
 
     def get(self, request, *args, **kwargs):
-        form = SecretPermissionsForm(request.GET, render_hidden_fields=True)
+        form = SecretPermissionsForm(request.GET)
         if not form.is_valid():
             return self.redirect_to_permissions_list(messages.ERROR, 'Invalid parameters')
 
@@ -168,18 +172,26 @@ class SecretPermissionsDeleteView(DetailView):
 @method_decorator(permission_required_or_403('secret.view_secret', (Secret, 'pk', 'pk')),  name='get')
 class SecretPermissionsView(FormView):
     template_name = 'secret/permissions.html'
-    form_class = SecretPermissionsForm
 
     def get_success_url(self):
         return reverse('secret:permissions', kwargs=dict(pk=self.kwargs['pk']))
+
+    def get_form_class(self):
+        """Return the correct form based the key in `request.POST`; if the page is not posted, then we return
+        a single form to appease the existing FormView logic."""
+        if self.request.POST.get('group'):
+            return SecretGroupPermissionsForm
+        else:
+            return SecretUserPermissionsForm
 
     def form_valid(self, form):
 
         secret = Secret.objects.get(pk=self.kwargs['pk'])
 
         http_response = super().form_valid(form)
+        assignee = form.cleaned_data.get('user', form.cleaned_data.get('group'))
 
-        assignee = form.cleaned_data['user'] or form.cleaned_data['group']
+        assert assignee
 
         # if the user has been granted change permissions also give them view permission
         if form.cleaned_data['permission'] == EDIT_SECRET_PERMISSION:
@@ -212,7 +224,16 @@ class SecretPermissionsView(FormView):
                 if perm in [EDIT_SECRET_PERMISSION, VIEW_SECRET_PERMISSION]
             ]
 
-        context = super().get_context_data(**kwargs)
+        context = ContextMixin.get_context_data(self, **kwargs)
+
+        if self.request.method == "POST":
+            if self.request.POST.get('group'):
+                context['group_form'] = self.get_form()
+            else:
+                context['user_form'] = self.get_form()
+
+        context.setdefault('group_form', SecretGroupPermissionsForm())
+        context.setdefault('user_form', SecretUserPermissionsForm())
 
         pk = context['pk'] = self.kwargs['pk']
         context['tab'] = 'permissions'

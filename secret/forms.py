@@ -48,8 +48,7 @@ class SecretUpdateForm(forms.ModelForm):
             ),
             'details',
             FormActions(
-                Submit('save', 'Update password'),
-                Submit('save_continue', 'Save and continue'),
+                Submit('save', 'Update secret'),
             ),
         )
 
@@ -69,15 +68,26 @@ class SecretCreateForm(SecretUpdateForm):
         super().__init__(*args, **kwargs)
 
         self.helper.layout[-1] = FormActions(
-            Submit('save', 'Save and continue'),
+            Submit('save', 'Create secret'),
         )
 
 
 class SecretPermissionsForm(forms.Form):
 
-    user = forms.ModelChoiceField(queryset=get_user_model().objects.all().exclude(email='AnonymousUser'), required=False)
-    group = forms.ModelChoiceField(queryset=Group.objects.all().order_by('name'), required=False)
-    permission = forms.ChoiceField(choices=PERMISSION_CHOICES)
+    user = forms.ModelChoiceField(
+        queryset=get_user_model().objects.all().exclude(email='AnonymousUser'),
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.all().order_by('name'),
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+    permission = forms.ChoiceField(
+        choices=PERMISSION_CHOICES,
+        widget=forms.HiddenInput(),
+    )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -87,19 +97,38 @@ class SecretPermissionsForm(forms.Form):
 
         return cleaned_data
 
-    def __init__(self, *args, render_hidden_fields=False, **kwargs):
+
+class SecretGroupPermissionsForm(forms.Form):
+    group = forms.ModelChoiceField(queryset=Group.objects.all().order_by('name'))
+    permission = forms.ChoiceField(choices=PERMISSION_CHOICES)
+
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if render_hidden_fields:
-            self.fields['user'].widget = forms.HiddenInput()
-            self.fields['group'].widget = forms.HiddenInput()
-            self.fields['permission'].widget = forms.HiddenInput()
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('group'),
+                Column('permission'),
+                css_class='form-row'
+            ),
+            FormActions(
+                Submit('add', 'Add'),
+            ),
+        )
+
+
+class SecretUserPermissionsForm(forms.Form):
+    user = forms.ModelChoiceField(queryset=get_user_model().objects.all().exclude(email='AnonymousUser'))
+    permission = forms.ChoiceField(choices=PERMISSION_CHOICES)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
                 Column('user'),
-                Column('group'),
                 Column('permission'),
                 css_class='form-row'
             ),
