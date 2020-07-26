@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
--e git+https://github.com/uktrade/django-staff-sso-client/@add_email_id_support#egg=authbroker_client  # via -r requirements.in
+-e git+https://github.com/uktrade/django-staff-sso-client/@add_email_id_support#egg=authbroker-client  # via -r requirements.in
 asgiref==3.2.10           # via django
 certifi==2020.6.20        # via requests, sentry-sdk
 cffi==1.14.0              # via cryptography
