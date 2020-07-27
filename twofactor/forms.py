@@ -20,6 +20,9 @@ class OTPVerifyForm(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Field('otp_token', css_class='w-25'),
+            FormActions(
+                Submit('save', 'Verify'),
+            ),
         )
 
     def clean_otp_token(self):
