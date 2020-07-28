@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import Group
 
 from user.models import User
 
@@ -22,12 +23,13 @@ class UserChangeForm(forms.ModelForm):
 
 
 class UserAdmin(BaseUserAdmin):
-    # The forms to add and change user instances
     form = UserChangeForm
     add_form = UserCreationForm
 
     list_display = ('email', 'is_superuser', 'is_active')
     list_filter = ('is_superuser', 'is_active')
+
+    autocomplete_fields = ('groups',)
 
     fieldsets = (
         (None, {'fields': ('email',)}),
