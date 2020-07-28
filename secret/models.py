@@ -4,6 +4,8 @@ from django.db import models
 from django.urls import reverse
 
 from django_cryptography.fields import encrypt
+from guardian.models import UserObjectPermissionBase
+from guardian.models import GroupObjectPermissionBase
 
 
 class Secret(models.Model):
@@ -29,3 +31,11 @@ class Secret(models.Model):
 
     class Meta:
         ordering = ('name',)
+
+
+class SecretUserObjectPermission(UserObjectPermissionBase):
+    content_object = models.ForeignKey(Secret, on_delete=models.CASCADE)
+
+
+class SecretGroupObjectPermission(GroupObjectPermissionBase):
+    content_object = models.ForeignKey(Secret, on_delete=models.CASCADE)
