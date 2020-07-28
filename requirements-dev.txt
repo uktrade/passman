@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements-dev.txt requirements-dev.in
 #
--e git+https://github.com/uktrade/django-staff-sso-client/@add_email_id_support#egg=authbroker_client  # via -r requirements.txt
+-e git+https://github.com/uktrade/django-staff-sso-client/@add_email_id_support#egg=authbroker-client # via -r requirements.txt
 asgiref==3.2.10           # via -r requirements.txt, django
 attrs==19.3.0             # via pytest
 certifi==2020.6.20        # via -r requirements.txt, requests, sentry-sdk
