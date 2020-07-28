@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'authbroker_client',
     'crispy_forms',
     'django_filters',
+    'guardian',
     'audit',
     'user',
     'secret',
@@ -142,6 +143,7 @@ AUTHBROKER_STAFF_SSO_SCOPE = 'read write'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'authbroker_client.backends.AuthbrokerBackend',
+    'guardian.backends.ObjectPermissionBackend',
 ]
 
 LOGIN_URL = reverse_lazy('authbroker_client:login')
@@ -173,3 +175,7 @@ MESSAGE_TAGS = {
 
 CRYPTOGRAPHY_KEY = env('CRYPTOGRAPHY_KEY', default=SECRET_KEY)
 CRYPTOGRAPHY_SALT = env('CRYPTOGRAPHY_SALT')
+
+# guardian config
+
+GUARDIAN_MONKEY_PATCH = False

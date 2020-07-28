@@ -12,10 +12,7 @@ class Secret(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
-    created_by = models.ForeignKey('user.User', on_delete=models.PROTECT, null=True)
-
-    owner_group = models.ForeignKey('auth.Group', related_name='owner_group', on_delete=models.PROTECT, null=True)
-    viewer_groups = models.ManyToManyField('auth.Group', related_name='viewer_groups')
+    created_by = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True)
 
     name = models.CharField(max_length=255)
 

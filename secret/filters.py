@@ -1,4 +1,8 @@
+from django.contrib.auth.models import Group
+
 import django_filters
+
+from guardian.shortcuts import get_objects_for_group, get_objects_for_user
 
 from .models import Secret
 
@@ -8,17 +12,23 @@ class SecretFilter(django_filters.FilterSet):
     group = django_filters.CharFilter(method='filter_by_group', distinct=True)
 
     def filter_by_group(self, queryset, name, value):
-        return queryset.filter(owner_group__name=value) | queryset.filter(viewer_groups__name=value)
+
+        if self.request.user.is_superuser:
+            group = Group.objects.get(name=value)
+        else:
+            group = self.request.user.groups.get(name=value)
+
+        return get_objects_for_group(group, ['view_secret', 'change_secret'], queryset, any_perm=True)
 
     @property
     def qs(self):
         parent = super().qs
 
-        user_groups = self.request.user.get_permitted_groups()
-
-        return (parent.filter(owner_group__in=user_groups)
-               | parent.filter(viewer_groups__in=user_groups)).distinct()
+        if self.request.user.is_superuser:
+            return parent
+        else:
+            return get_objects_for_user(self.request.user, ['view_secret', 'change_secret'], parent, any_perm=True)
 
     class Meta:
         model = Secret
-        fields = ['name', 'username', 'owner_group', 'viewer_groups']
+        fields = ['name', 'username',]
