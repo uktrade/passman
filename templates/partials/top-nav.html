@@ -1,12 +1,13 @@
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <nav class="navbar navbar-dark bg-dark">
       <a class="navbar-brand" href="/">Password manager</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
 
       {% if request.user.is_authenticated %}
-      <div class="collapse navbar-collapse justify-content-end"">
-        <a href="/logout/" class="btn {% if request.user.is_verified %}btn-warning{% else %}btn-secondary{% endif %}">{{ request.user.get_full_name }}, logout</a>
+      <div class="ml-auto">
+          {% if request.user.is_superuser or request.user.is_staff %}
+              <a href="{% url 'admin:index' %}" class="btn btn-danger">Admin section</a>
+          {% endif %}
+
+          <a href="/logout/" class="btn {% if request.user.is_verified %}btn-warning{% else %}btn-secondary{% endif %}">{{ request.user.get_full_name }}, logout</a>
       </div>
       {% endif %}
 

@@ -121,10 +121,12 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = True
 
+DATETIME_FORMAT = 'jS M G:i:s'
+TIME_FORMAT = '%H:%M:%S'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -190,3 +192,11 @@ REQUIRE_2FA = True
 OTP_LOGIN_URL = reverse_lazy('twofactor:verify')
 OTP_HOTP_ISSUER = env('OTP_HOTP_ISSUER', default='Passman')
 OTP_TOTP_ISSUER = OTP_HOTP_ISSUER
+
+# audit event config
+
+AUDIT_EVENT_REPEAT_AFTER_MINUTES = env.int('AUDIT_EVENT_REPEAT_AFTER_MINUTES', default=12*60)
+
+# app settings
+
+SECRET_PAGINATION_ITEMS_PER_PAGE = 20

@@ -26,10 +26,11 @@ faker==4.1.1              # via factory-boy
 flake8-blind-except==0.1.1  # via -r requirements-dev.in
 flake8-debugger==3.2.1    # via -r requirements-dev.in
 flake8-import-order==0.18.1  # via -r requirements-dev.in
+flake8-mutable==1.2.0     # via -r requirements-dev.in
 flake8-print==3.1.4       # via -r requirements-dev.in
 flake8-quotes==3.2.0      # via -r requirements-dev.in
-flake8==3.8.3             # via -r requirements-dev.in, flake8-debugger, flake8-print, flake8-quotes
-freezegun==0.3.15         # via -r requirements-dev.in
+flake8==3.8.3             # via -r requirements-dev.in, flake8-debugger, flake8-mutable, flake8-print, flake8-quotes
+freezegun==0.3.15         # via -r requirements-dev.in, pytest-freezegun
 gunicorn==20.0.4          # via -r requirements.txt
 idna==2.10                # via -r requirements.txt, requests
 importlib-metadata==1.7.0  # via flake8, pluggy, pytest
@@ -49,9 +50,10 @@ pyparsing==2.4.7          # via packaging
 pytest-cov==2.10.0        # via -r requirements-dev.in
 pytest-django==3.9.0      # via -r requirements-dev.in
 pytest-env==0.6.2         # via -r requirements-dev.in
+pytest-freezegun==0.4.2   # via -r requirements-dev.in
 pytest-mock==3.2.0        # via -r requirements-dev.in
 pytest-sugar==0.9.1       # via -r requirements-dev.in
-pytest==5.4.3             # via -r requirements-dev.in, pytest-cov, pytest-django, pytest-env, pytest-mock, pytest-sugar
+pytest==5.4.3             # via -r requirements-dev.in, pytest-cov, pytest-django, pytest-env, pytest-freezegun, pytest-mock, pytest-sugar
 python-dateutil==2.8.1    # via faker, freezegun
 pytz==2020.1              # via -r requirements.txt, django
 qrcode==6.1               # via -r requirements.txt
