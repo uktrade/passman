@@ -10,6 +10,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django_filters.views import FilterView
 from guardian.shortcuts import assign_perm, get_groups_with_perms, get_users_with_perms, get_perms, remove_perm
 from guardian.decorators import permission_required_or_403
+from django_otp.decorators import otp_required
 
 from audit.models import Actions, Audit
 from .filters import SecretFilter
@@ -33,7 +34,7 @@ class SecretListView(FilterView):
 
         return context
 
-
+@method_decorator(otp_required, name='dispatch')
 @method_decorator(sensitive_post_parameters('password', 'details'), name='dispatch')
 class SecretCreateView(CreateView):
     model = Secret
@@ -53,6 +54,7 @@ class SecretCreateView(CreateView):
         return http_response
 
 
+@method_decorator(otp_required, name='dispatch')
 @method_decorator(permission_required_or_403('secret.change_secret', (Secret, 'pk', 'pk')),  name='post')
 @method_decorator(permission_required_or_403('secret.view_secret', (Secret, 'pk', 'pk')),  name='get')
 @method_decorator(sensitive_post_parameters('password', 'details'),  name='dispatch')
@@ -85,6 +87,7 @@ class SecretDetailView(UpdateView):
         return context
 
 
+@method_decorator(otp_required, name='dispatch')
 @method_decorator(permission_required_or_403('secret.view_secret', (Secret, 'pk', 'pk')),  name='dispatch')
 class SecretAuditView(TemplateView):
     template_name = 'secret/secret_audit.html'
@@ -99,6 +102,7 @@ class SecretAuditView(TemplateView):
         return context
 
 
+@method_decorator(otp_required, name='dispatch')
 @method_decorator(permission_required_or_403('secret.change_secret', (Secret, 'pk', 'pk')),  name='post')
 @method_decorator(permission_required_or_403('secret.change_secret', (Secret, 'pk', 'pk')),  name='get')
 class SecretPermissionsDeleteView(DetailView):
@@ -148,6 +152,7 @@ class SecretPermissionsDeleteView(DetailView):
         return context
 
 
+@method_decorator(otp_required, name='dispatch')
 @method_decorator(permission_required_or_403('secret.change_secret', (Secret, 'pk', 'pk')),  name='post')
 @method_decorator(permission_required_or_403('secret.view_secret', (Secret, 'pk', 'pk')),  name='get')
 class SecretPermissionsView(FormView):

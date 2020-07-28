@@ -8,6 +8,8 @@ django-crispy-forms
 django-filter
 django-cryptography
 django-guardian
+django-otp
+qrcode
 
 whitenoise
 gunicorn

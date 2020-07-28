@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_filters',
     'guardian',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'twofactor',
     'audit',
     'user',
     'secret',
@@ -56,6 +59,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.ProtectAllViewsMiddleware',
@@ -179,3 +183,10 @@ CRYPTOGRAPHY_SALT = env('CRYPTOGRAPHY_SALT')
 # guardian config
 
 GUARDIAN_MONKEY_PATCH = False
+
+# OTP / 2FA config
+
+REQUIRE_2FA = True
+OTP_LOGIN_URL = reverse_lazy('twofactor:verify')
+OTP_HOTP_ISSUER = env('OTP_HOTP_ISSUER', default='Passman')
+OTP_TOTP_ISSUER = OTP_HOTP_ISSUER
