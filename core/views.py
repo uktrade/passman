@@ -8,10 +8,7 @@ def admin_login_view(request):
     """A replacement admin login view that will direct the user through the SSO
     authentication flow. """
 
-    next_url = request.GET.get(
-        'next',
-        reverse('admin:index')
-    )
+    next_url = request.GET.get("next", reverse("admin:index"))
 
     if request.user.is_authenticated:
         if (request.user.is_staff or request.user.is_superuser) and request.user.is_active:
@@ -19,4 +16,4 @@ def admin_login_view(request):
         else:
             raise PermissionDenied
 
-    return redirect('%s?next=%s' % (reverse(settings.LOGIN_URL), next_url))
+    return redirect("%s?next=%s" % (reverse(settings.LOGIN_URL), next_url))

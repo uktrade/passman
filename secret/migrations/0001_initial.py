@@ -8,21 +8,25 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Secret',
+            name="Secret",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=255)),
-                ('url', models.URLField(blank=True)),
-                ('username', models.CharField(blank=True, max_length=255)),
-                ('password', models.CharField(blank=True, max_length=255)),
-                ('details', models.TextField(blank=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4, editable=False, primary_key=True, serialize=False,
+                    ),
+                ),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=255)),
+                ("url", models.URLField(blank=True)),
+                ("username", models.CharField(blank=True, max_length=255)),
+                ("password", models.CharField(blank=True, max_length=255)),
+                ("details", models.TextField(blank=True)),
             ],
         ),
     ]

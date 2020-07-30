@@ -10,25 +10,32 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('auth', '0011_update_proxy_permissions'),
+        ("auth", "0011_update_proxy_permissions"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('secret', '0001_initial'),
+        ("secret", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='secret',
-            name='created_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+            model_name="secret",
+            name="created_by",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='secret',
-            name='owner_group',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='owner_group', to='auth.Group'),
+            model_name="secret",
+            name="owner_group",
+            field=models.OneToOneField(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="owner_group",
+                to="auth.Group",
+            ),
         ),
         migrations.AddField(
-            model_name='secret',
-            name='viewer_groups',
-            field=models.ManyToManyField(related_name='viewer_groups', to='auth.Group'),
+            model_name="secret",
+            name="viewer_groups",
+            field=models.ManyToManyField(related_name="viewer_groups", to="auth.Group"),
         ),
     ]

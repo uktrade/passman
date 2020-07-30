@@ -7,20 +7,32 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Audit',
+            name="Audit",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('action', models.CharField(choices=[('created_secret', 'Created'), ('updated_secret', 'Updated'), ('viewed_secret', 'Viewed')], max_length=255)),
-                ('description', models.CharField(blank=True, max_length=255)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID",
+                    ),
+                ),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[
+                            ("created_secret", "Created"),
+                            ("updated_secret", "Updated"),
+                            ("viewed_secret", "Viewed"),
+                        ],
+                        max_length=255,
+                    ),
+                ),
+                ("description", models.CharField(blank=True, max_length=255)),
             ],
-            options={
-                'verbose_name_plural': 'audit',
-            },
+            options={"verbose_name_plural": "audit",},
         ),
     ]

@@ -11,7 +11,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email',)
+        fields = ("email",)
 
 
 class UserChangeForm(forms.ModelForm):
@@ -19,33 +19,28 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email', 'is_active', 'is_superuser')
+        fields = ("email", "is_active", "is_superuser")
 
 
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
 
-    list_display = ('email', 'is_superuser', 'is_active')
-    list_filter = ('is_superuser', 'is_active')
+    list_display = ("email", "is_superuser", "is_active")
+    list_filter = ("is_superuser", "is_active")
 
-    autocomplete_fields = ('groups',)
+    autocomplete_fields = ("groups",)
 
     fieldsets = (
-        (None, {'fields': ('email',)}),
-        ('Personal info', {'fields': ('first_name','last_name')}),
-        ('Permissions', {'fields': ('is_staff','is_superuser', 'is_active')}),
-        ('Groups', {'fields': ('groups',)}),
+        (None, {"fields": ("email",)}),
+        ("Personal info", {"fields": ("first_name", "last_name")}),
+        ("Permissions", {"fields": ("is_staff", "is_superuser", "is_active")}),
+        ("Groups", {"fields": ("groups",)}),
     )
 
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('email',),
-        }),
-    )
-    search_fields = ('email',)
-    ordering = ('email',)
+    add_fieldsets = ((None, {"classes": ("wide",), "fields": ("email",),}),)
+    search_fields = ("email",)
+    ordering = ("email",)
     filter_horizontal = ()
 
 

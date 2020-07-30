@@ -18,18 +18,14 @@ from .forms import OTPTokenForm, OTPVerifyForm
 
 class TwoFactorEnrollView(FormView):
     form_class = OTPVerifyForm
-    template_name = 'twofactor/enroll.html'
-    success_url = reverse_lazy('secret:list')
+    template_name = "twofactor/enroll.html"
+    success_url = reverse_lazy("secret:list")
     device = None
 
     def get_device(self):
         if not self.device:
             self.device, _ = TOTPDevice.objects.get_or_create(
-                user=self.request.user,
-                defaults={
-                    'confirmed': False,
-                    'name': 'TOTP device',
-                }
+                user=self.request.user, defaults={"confirmed": False, "name": "TOTP device",},
             )
 
         return self.device
@@ -49,16 +45,16 @@ class TwoFactorEnrollView(FormView):
 
         device = self.get_device()
 
-        context['device_confirmed'] = device.confirmed
+        context["device_confirmed"] = device.confirmed
 
         if not device.confirmed:
-            context['qrcode'] = self.make_qrcode(device)
+            context["qrcode"] = self.make_qrcode(device)
 
         return context
 
     def form_valid(self, form):
 
-        messages.info(self.request, 'You have enabled 2-factor authentication')
+        messages.info(self.request, "You have enabled 2-factor authentication")
 
         device = self.get_device()
         device.confirmed = True
@@ -69,8 +65,8 @@ class TwoFactorEnrollView(FormView):
 
 class TwoFactorVerifyView(SuccessURLAllowedHostsMixin, FormView):
     form_class = OTPTokenForm
-    template_name = 'twofactor/verify.html'
-    success_url = reverse_lazy('secret:list')
+    template_name = "twofactor/verify.html"
+    success_url = reverse_lazy("secret:list")
     redirect_field_name = REDIRECT_FIELD_NAME
 
     def get_form_class(self):
@@ -84,15 +80,14 @@ class TwoFactorVerifyView(SuccessURLAllowedHostsMixin, FormView):
     def get_redirect_url(self):
         """Return the user-originating redirect URL if it's safe."""
         redirect_to = self.request.POST.get(
-            self.redirect_field_name,
-            self.request.GET.get(self.redirect_field_name, '')
+            self.redirect_field_name, self.request.GET.get(self.redirect_field_name, "")
         )
         url_is_safe = url_has_allowed_host_and_scheme(
             url=redirect_to,
             allowed_hosts=self.get_success_url_allowed_hosts(),
             require_https=self.request.is_secure(),
         )
-        return redirect_to if url_is_safe else ''
+        return redirect_to if url_is_safe else ""
 
     def get_success_url(self):
 

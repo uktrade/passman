@@ -7,22 +7,19 @@ import django_cryptography.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('secret', '0003_auto_20200712_1423'),
+        ("secret", "0003_auto_20200712_1423"),
     ]
 
     operations = [
-        migrations.AlterModelOptions(
-            name='secret',
-            options={'ordering': ('name',)},
-        ),
+        migrations.AlterModelOptions(name="secret", options={"ordering": ("name",)},),
         migrations.AlterField(
-            model_name='secret',
-            name='details',
+            model_name="secret",
+            name="details",
             field=django_cryptography.fields.encrypt(models.TextField(blank=True)),
         ),
         migrations.AlterField(
-            model_name='secret',
-            name='password',
+            model_name="secret",
+            name="password",
             field=django_cryptography.fields.encrypt(models.CharField(blank=True, max_length=255)),
         ),
     ]
