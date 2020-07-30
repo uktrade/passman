@@ -1,7 +1,6 @@
-from django.contrib import admin
-
 from guardian.admin import GuardedModelAdmin
 
+from core.admin import admin_site
 from .models import Secret
 
 
@@ -21,4 +20,4 @@ class SecretAdmin(GuardedModelAdmin):
     ordering = ("created",)
 
 
-admin.site.register(Secret, SecretAdmin)
+admin_site.register(Secret, SecretAdmin)

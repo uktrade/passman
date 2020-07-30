@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from core.admin import admin_site
 from .models import Audit
 
 
@@ -14,4 +15,4 @@ class AuditAdmin(admin.ModelAdmin):
         return False
 
 
-admin.site.register(Audit, AuditAdmin)
+admin_site.register(Audit, AuditAdmin)

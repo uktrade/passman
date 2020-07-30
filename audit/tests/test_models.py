@@ -3,7 +3,7 @@ import pytest
 
 from django.utils import timezone
 
-from user.tests.factories.user import UserFactory
+from user.tests.factories import UserFactory
 
 from audit.models import Actions, Audit, create_audit_event
 

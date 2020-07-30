@@ -1,9 +1,9 @@
-from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import Group
 
 from user.models import User
+
+from core.admin import admin_site
 
 
 class UserCreationForm(forms.ModelForm):
@@ -44,4 +44,4 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = ()
 
 
-admin.site.register(User, UserAdmin)
+admin_site.register(User, UserAdmin)
