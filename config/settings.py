@@ -3,7 +3,7 @@ import os
 from django.contrib.messages import constants as messages
 from django.urls import reverse_lazy
 
-import dj_database_url
+import dj_database_url  # noqa
 import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -145,7 +145,7 @@ LOGIN_REDIRECT_URL = reverse_lazy("secret:list")
 LOGOUT_REDIRECT_URL = reverse_lazy("user:logged-out")
 
 STAFF_SSO_ID_FIELD = "email_user_id"
-STAFF_SSO_USER_CREATE_FUNC = lambda profile: dict(
+STAFF_SSO_USER_CREATE_FUNC = lambda profile: dict(  # noqa
     is_active=True, first_name=profile["first_name"], last_name=profile["last_name"]
 )
 

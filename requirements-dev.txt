@@ -13,7 +13,8 @@ cffi==1.14.0              # via -r requirements.txt, cryptography
 cfgv==3.2.0               # via pre-commit
 chardet==3.0.4            # via -r requirements.txt, requests
 click==7.1.2              # via black
-coverage==5.2             # via pytest-cov
+codecov==2.1.8            # via -r requirements-dev.in
+coverage==5.2             # via codecov, pytest-cov
 cryptography==3.0         # via -r requirements.txt, django-cryptography
 distlib==0.3.1            # via virtualenv
 dj-database-url==0.5.0    # via -r requirements.txt
@@ -69,7 +70,7 @@ pyyaml==5.3.1             # via pre-commit
 qrcode==6.1               # via -r requirements.txt
 regex==2020.7.14          # via black
 requests-oauthlib==1.3.0  # via -r requirements.txt, django-staff-sso-client
-requests==2.24.0          # via -r requirements.txt, requests-oauthlib
+requests==2.24.0          # via -r requirements.txt, codecov, requests-oauthlib
 sentry-sdk==0.16.1        # via -r requirements.txt
 six==1.15.0               # via -r requirements.txt, cryptography, flake8-print, freezegun, mohawk, packaging, python-dateutil, qrcode, virtualenv
 sqlparse==0.3.1           # via -r requirements.txt, django

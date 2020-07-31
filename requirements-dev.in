@@ -19,6 +19,7 @@ flake8-print
 black
 pre-commit
 isort
+codecov
 
 lxml
 mohawk==1.1.0
