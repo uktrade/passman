@@ -8,13 +8,9 @@ from django.utils.http import url_has_allowed_host_and_scheme
 
 def get_redirect_url(request):
     """Return the user-originating redirect URL if it's safe."""
-    redirect_to = request.POST.get(
-        REDIRECT_FIELD_NAME, request.GET.get(REDIRECT_FIELD_NAME, "")
-    )
+    redirect_to = request.POST.get(REDIRECT_FIELD_NAME, request.GET.get(REDIRECT_FIELD_NAME, ""))
     url_is_safe = url_has_allowed_host_and_scheme(
-        url=redirect_to,
-        allowed_hosts=request.get_host(),
-        require_https=request.is_secure(),
+        url=redirect_to, allowed_hosts=request.get_host(), require_https=request.is_secure(),
     )
     return redirect_to if url_is_safe else ""
 
@@ -28,7 +24,7 @@ def admin_login_view(request):
     if request.user.is_authenticated:
         if (request.user.is_staff or request.user.is_superuser) and request.user.is_active:
             if not request.user.is_verified():
-                return redirect('twofactor:verify')
+                return redirect("twofactor:verify")
             return redirect(next_url)
         else:
             raise PermissionDenied

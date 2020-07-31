@@ -1,5 +1,5 @@
 [tool.black]
-line-length = 100 
+line-length = 100
 target-version = ['py36', 'py37', 'py38']
 include = '\.pyi?$'
 exclude = '''
@@ -26,3 +26,10 @@ exclude = '''
 [build-system]
 requires = ["setuptools>=41.0", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
+
+
+[tool.isort]
+multi_line_output = 3
+profile="black"
+line_length=100
+skip="env,venv"

@@ -22,16 +22,16 @@ The application should be hosted in a secure environment, preferably behind a VP
 
 1. Clone the repository 
 
-2. Run: `setup-local-env.sh`
+2. Run: `make setup-project`
+  This will:
+  - create and activate a virtualenv
+  - install pip-tools
+  - install dependencies
+  - install a github precommit hook
+  - create a new .env file
+  - create a database (this requires a local postgres instance) 
 
-Then you can either run the app with docker-compose:
+3. Put relevant settings into your .env file. Specifically the `AUTHBROKER_*` env vars will need some settings. Speak to webops.
 
-    `docker-compose up`
-    
-Or without docker:
+4. Apply django migrations and run the server - here's a shortcut: `make runserver` 
 
-    `./manage.py runserver`
-
-NOTES:
-
-`setup-local-env.sh` assumes that postgres is accessible locally without a password; if this is not the case then you will need to create a database and ensure the correct connection string is set for `DATABASE_URL` in `.env`   

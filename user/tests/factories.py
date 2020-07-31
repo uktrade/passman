@@ -19,7 +19,5 @@ class UserFactory(factory.django.DjangoModelFactory):
 
         if extracted:
             TOTPDevice.objects.create(
-                user=self,
-                name="test-device",
-                confirmed=True,
+                user=self, name="test-device", confirmed=True,
             )
