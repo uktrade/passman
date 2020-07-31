@@ -14,7 +14,6 @@ from guardian.shortcuts import (
     assign_perm,
     get_groups_with_perms,
     get_users_with_perms,
-    get_perms,
     remove_perm,
 )
 from guardian.decorators import permission_required_or_403

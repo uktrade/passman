@@ -13,7 +13,6 @@ freezegun
 flake8
 flake8-blind-except
 flake8-debugger
-flake8-isort
 flake8-mutable
 flake8-print
 
