@@ -1,8 +1,9 @@
-from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from user.models import User
+
+from core.admin import admin_site
 
 
 class UserCreationForm(forms.ModelForm):
@@ -10,7 +11,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email',)
+        fields = ("email",)
 
 
 class UserChangeForm(forms.ModelForm):
@@ -18,33 +19,29 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email', 'is_active', 'is_superuser')
+        fields = ("email", "is_active", "is_superuser")
 
 
 class UserAdmin(BaseUserAdmin):
-    # The forms to add and change user instances
     form = UserChangeForm
     add_form = UserCreationForm
 
-    list_display = ('email', 'is_superuser', 'is_active')
-    list_filter = ('is_superuser', 'is_active')
+    list_display = ("email", "is_superuser", "is_active")
+    list_filter = ("is_superuser", "is_active")
+
+    autocomplete_fields = ("groups",)
 
     fieldsets = (
-        (None, {'fields': ('email',)}),
-        ('Personal info', {'fields': ('first_name','last_name')}),
-        ('Permissions', {'fields': ('is_staff','is_superuser', 'is_active')}),
-        ('Groups', {'fields': ('groups',)}),
+        (None, {"fields": ("email",)}),
+        ("Personal info", {"fields": ("first_name", "last_name")}),
+        ("Permissions", {"fields": ("is_staff", "is_superuser", "is_active")}),
+        ("Groups", {"fields": ("groups",)}),
     )
 
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('email',),
-        }),
-    )
-    search_fields = ('email',)
-    ordering = ('email',)
+    add_fieldsets = ((None, {"classes": ("wide",), "fields": ("email",),}),)
+    search_fields = ("email",)
+    ordering = ("email",)
     filter_horizontal = ()
 
 
-admin.site.register(User, UserAdmin)
+admin_site.register(User, UserAdmin)

@@ -4,6 +4,8 @@ from django.db import models
 from django.urls import reverse
 
 from django_cryptography.fields import encrypt
+from guardian.models import UserObjectPermissionBase
+from guardian.models import GroupObjectPermissionBase
 
 
 class Secret(models.Model):
@@ -12,7 +14,7 @@ class Secret(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
-    created_by = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True)
+    created_by = models.ForeignKey("user.User", on_delete=models.SET_NULL, null=True)
 
     name = models.CharField(max_length=255)
 
@@ -25,7 +27,15 @@ class Secret(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('secret:detail', args=[self.id])
+        return reverse("secret:detail", args=[self.id])
 
     class Meta:
-        ordering = ('name',)
+        ordering = ("name",)
+
+
+class SecretUserObjectPermission(UserObjectPermissionBase):
+    content_object = models.ForeignKey(Secret, on_delete=models.CASCADE)
+
+
+class SecretGroupObjectPermission(GroupObjectPermissionBase):
+    content_object = models.ForeignKey(Secret, on_delete=models.CASCADE)

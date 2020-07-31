@@ -9,21 +9,19 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('secret', '0004_auto_20200714_1741'),
+        ("secret", "0004_auto_20200714_1741"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='secret',
-            name='owner_group',
-        ),
-        migrations.RemoveField(
-            model_name='secret',
-            name='viewer_groups',
-        ),
+        migrations.RemoveField(model_name="secret", name="owner_group",),
+        migrations.RemoveField(model_name="secret", name="viewer_groups",),
         migrations.AlterField(
-            model_name='secret',
-            name='created_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
+            model_name="secret",
+            name="created_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

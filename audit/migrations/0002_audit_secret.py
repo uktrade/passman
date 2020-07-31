@@ -9,14 +9,16 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('audit', '0001_initial'),
-        ('secret', '0001_initial'),
+        ("audit", "0001_initial"),
+        ("secret", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='audit',
-            name='secret',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='secret.Secret'),
+            model_name="audit",
+            name="secret",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to="secret.Secret"
+            ),
         ),
     ]

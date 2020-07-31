@@ -1,0 +1,12 @@
+repos:
+- repo: https://github.com/ambv/black
+  rev: stable
+  hooks:
+    - id: black
+- repo: local
+  hooks:
+    - id: flake8
+      name: flake8
+      entry: flake8
+      language: system
+      types: [python]

@@ -10,21 +10,28 @@ class ProtectAllViewsMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        public_views = getattr(settings, 'PUBLIC_VIEWS', [])
-        require_2fa = getattr(settings, 'REQUIRE_2FA', True)
+        public_views = getattr(settings, "PUBLIC_VIEWS", [])
+        require_2fa = getattr(settings, "REQUIRE_2FA", True)
 
         if not request.user.is_authenticated:
             # user must sign in
-            if resolve(request.path).app_name != 'authbroker_client' and request.path not in public_views:
-                return redirect('authbroker_client:login')
+            if (
+                resolve(request.path).app_name != "authbroker_client"
+                and request.path not in public_views
+            ):
+                return redirect("authbroker_client:login")
         else:
             # user is disabled
-            if not request.user.is_active and request.path != reverse('user:disabled'):
-                return redirect('user:disabled')
+            if not request.user.is_active and request.path != reverse("user:disabled"):
+                return redirect("user:disabled")
 
             # user is not enrolled for 2fa
-            if require_2fa and not user_has_device(request.user) and request.path not in [reverse('twofactor:enroll'), reverse('twofactor:verify')]:
-                return redirect('twofactor:enroll')
+            if (
+                require_2fa
+                and not user_has_device(request.user)
+                and request.path not in [reverse("twofactor:enroll"), reverse("twofactor:verify")]
+            ):
+                return redirect("twofactor:enroll")
 
         response = self.get_response(request)
 

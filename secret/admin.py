@@ -1,16 +1,23 @@
-from django.contrib import admin
-
 from guardian.admin import GuardedModelAdmin
 
+from core.admin import admin_site
 from .models import Secret
 
 
 class SecretAdmin(GuardedModelAdmin):
 
-    list_display = ('created', 'last_updated', 'created_by', 'name',)
-    readonly_fields = ('created', 'last_updated',)
+    list_display = (
+        "created",
+        "last_updated",
+        "created_by",
+        "name",
+    )
+    readonly_fields = (
+        "created",
+        "last_updated",
+    )
 
-    ordering = ('created',)
+    ordering = ("created",)
 
 
-admin.site.register(Secret, SecretAdmin)
+admin_site.register(Secret, SecretAdmin)
