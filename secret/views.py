@@ -37,8 +37,13 @@ class SecretListView(FilterView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        filter_group = self.filterset.data.get(
+            'group',
+            '__me' if 'me' in self.filterset.data else None
+        )
+
         context.update({
-            'filter_group': self.filterset.data.get('group', None),
+            'filter_group': filter_group,
             'search_term': self.filterset.data.get('name', None),
         })
 

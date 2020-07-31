@@ -1,12 +1,18 @@
-<h5>Groups</h5>
+<ul class="nav flex-column mb-2">
+    <li class="nav-item">
+      <a class="nav-link {% if not filter_group and not search_term and page_obj %} disabled{% endif %}" href="{% url 'secret:list' %}">Show all</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if filter_group == "__me" %} disabled{% endif %}" href="{% url 'secret:list' %}?me=True">My passwords</a>
+    </li>
+</ul>
+
+<h6>Groups</h6>
 
 <ul class="nav flex-column">
-    <li class="nav-item border-bottom">
-      <a class="nav-link {% if not filter_group and not search_term  and page_obj %} disabled{% endif %}" href="{% url 'secret:list' %}">{% if not filter_group and not search_term and page_obj %}&raquo; {% endif %}Show all</a>
-    </li>
     {% for group in request.user.get_permitted_groups %}
     <li class="nav-item" >
-      <a class="nav-link {% if filter_group == group.name %} disabled{% endif %}" href="{% url 'secret:list' %}?group={{ group.name }}">{% if filter_group == group.name %}&raquo; {% endif %}{{ group.name }}</a>
+      <a class="nav-link {% if filter_group == group.name %} disabled{% endif %}" href="{% url 'secret:list' %}?group={{ group.name }}">{{ group.name }}</a>
     </li>
     {% empty %}
     <li class="nav-item">You do not belong to any groups.</li>
