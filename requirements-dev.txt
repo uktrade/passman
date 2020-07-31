@@ -24,7 +24,7 @@ django-environ==0.4.5     # via -r requirements.txt
 django-filter==2.3.0      # via -r requirements.txt
 django-guardian==2.3.0    # via -r requirements.txt
 django-otp==0.9.3         # via -r requirements.txt
-git+https://github.com/uktrade/django-staff-sso-client/@add_email_id_support#egg=authbroker-client  # via -r requirements.txt
+git+https://github.com/uktrade/django-staff-sso-client.git@add_email_id_support#egg=django-staff-sso-client  # via -r requirements.txt
 django==3.0.8             # via -r requirements.txt, django-appconf, django-filter, django-guardian, django-otp, django-staff-sso-client
 factory-boy==2.12.0       # via -r requirements-dev.in
 faker==4.1.1              # via factory-boy
