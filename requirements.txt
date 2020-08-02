@@ -17,7 +17,7 @@ django-environ==0.4.5     # via -r requirements.in
 django-filter==2.3.0      # via -r requirements.in
 django-guardian==2.3.0    # via -r requirements.in
 django-otp==0.9.3         # via -r requirements.in
-git+https://github.com/uktrade/django-staff-sso-client/@add_email_id_support#egg=authbroker-client  # via -r requirements.in
+git+https://github.com/uktrade/django-staff-sso-client.git@add_email_id_support#egg=django-staff-sso-client  # via -r requirements.in
 django==3.0.8             # via -r requirements.in, django-appconf, django-filter, django-guardian, django-otp, django-staff-sso-client
 gunicorn==20.0.4          # via -r requirements.in
 idna==2.10                # via requests
