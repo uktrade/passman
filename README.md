@@ -1,5 +1,7 @@
 # Passman
 
+[![uktrade](https://circleci.com/gh/uktrade/passman.svg?style=svg)](https://app.circleci.com/pipelines/github/uktrade/passman) [![codecov](https://codecov.io/gh/uktrade/passman/branch/master/graph/badge.svg)](https://codecov.io/gh/uktrade/passman)
+
 Passman is a simple hosted password manager built to replace Rattic (https://github.com/tildaslash/RatticWeb).
 
 The application should be hosted in a secure environment, preferably behind a VPN, using an encrypted database and end-to-end encryption.
