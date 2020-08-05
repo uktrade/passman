@@ -151,7 +151,6 @@ STAFF_SSO_USER_CREATE_FUNC = lambda profile: dict(  # noqa
 
 PUBLIC_VIEWS = [
     reverse_lazy("user:logged-out"),
-    reverse_lazy("user:disabled"),
 ]
 
 # crispy forms config
