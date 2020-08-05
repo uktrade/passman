@@ -3,7 +3,7 @@ import os
 from django.contrib.messages import constants as messages
 from django.urls import reverse_lazy
 
-import dj_database_url  # noqa
+import dj_database_url
 import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
