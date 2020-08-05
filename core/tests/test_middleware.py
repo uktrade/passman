@@ -1,9 +1,18 @@
 import pytest
 
+from django.urls import reverse
 
-def test_user_is_not_active_sees_account_disabled():
-    pass
+from user.tests.factories import UserFactory
+
+pytestmark = pytest.mark.django_db
 
 
-def test_user_can_access_admin():
-    pass
+def test_user_without_2fa_is_redirected_to_enrollment_page(client):
+    user = UserFactory(is_active=True, two_factor_enabled=False)
+
+    client.force_login(user)
+
+    response = client.get(reverse("secret:list"))
+
+    assert response.status_code == 302
+    assert response.url == reverse("twofactor:enroll")

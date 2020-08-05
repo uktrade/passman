@@ -1,7 +1,13 @@
 import factory
 
-
 from django_otp.plugins.otp_totp.models import TOTPDevice
+
+
+class GroupFactory(factory.django.DjangoModelFactory):
+    name = factory.Sequence(lambda n: f"Group {n+1}")
+
+    class Meta:
+        model = "auth.Group"
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -21,3 +27,12 @@ class UserFactory(factory.django.DjangoModelFactory):
             TOTPDevice.objects.create(
                 user=self, name="test-device", confirmed=True,
             )
+
+    @factory.post_generation
+    def create_groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for group_name in extracted:
+                self.groups.add(GroupFactory(name=group_name))
