@@ -2,18 +2,10 @@ import pytest
 
 from django.urls import reverse
 
-from django_otp import DEVICE_ID_SESSION_KEY
-
-from user.tests.factories import UserFactory
+from user.tests.factories import UserFactory, otp_verify_user
 
 
 pytestmark = pytest.mark.django_db
-
-
-def otp_verify_user(user, client):
-    session = client.session
-    session[DEVICE_ID_SESSION_KEY] = user.totpdevice_set.first().persistent_id
-    session.save()
 
 
 def test_unauthenticated_user_is_redirected_to_sso(client):

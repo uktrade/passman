@@ -1,6 +1,13 @@
 import factory
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp import DEVICE_ID_SESSION_KEY
+
+
+def otp_verify_user(user, client):
+    session = client.session
+    session[DEVICE_ID_SESSION_KEY] = user.totpdevice_set.first().persistent_id
+    session.save()
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -14,6 +21,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     email = factory.Sequence(lambda n: f"user{n+1}@example.com")
     first_name = factory.Sequence(lambda n: f"Name {n+1}")
     last_name = factory.Sequence(lambda n: f"Surname {n+1}")
+    is_active = True
 
     class Meta:
         model = "user.User"

@@ -1,11 +1,27 @@
 import pytest
 
 from django.urls import reverse
+from django.utils import timezone
 
+from guardian.shortcuts import assign_perm, get_perms
+
+from audit.models import Actions, Audit
+from secret.models import Secret
 from secret.tests.factories import SecretFactory
-from user.tests.factories import UserFactory
+from user.tests.factories import UserFactory, otp_verify_user, GroupFactory
 
 pytestmark = pytest.mark.django_db
+
+
+def login_and_verify_user(client, verify=True, **extra_user_args):
+    user = UserFactory(two_factor_enabled=True, **extra_user_args)
+
+    client.force_login(user)
+
+    if verify:
+        otp_verify_user(user, client)
+
+    return user
 
 
 class TestListView:
@@ -16,34 +32,11 @@ class TestListView:
         assert response.url == reverse("authbroker_client:login")
 
     def test_verification_not_required(self, client):
-        user = UserFactory(is_active=True, two_factor_enabled=True)
-
-        client.force_login(user)
+        login_and_verify_user(client, verify=False)
 
         response = client.get(reverse("secret:list"))
 
         assert response.status_code == 200
-
-    def test_nav_groups_match_users_groups(self):
-        pass
-
-    def test_superuser_sees_all_groups(self):
-        pass
-
-    def test_user_can_only_filter_on_assigned_groups(self):
-        pass
-
-    def test_search_term_returns_only_permitted_results(self):
-        pass
-
-    def test_filter_results(self):
-        pass
-
-    def test_search(self):
-        pass
-
-    def test_pagination(self):
-        pass
 
 
 class TestUpdateView:
@@ -54,23 +47,103 @@ class TestUpdateView:
         assert response.status_code == 302
         assert response.url == reverse("authbroker_client:login")
 
-    def owner_groups_list_is_restricted(self):
-        pass
+    def test_superuser_can_view_and_edit_secrets(self, client):
+        login_and_verify_user(client, is_superuser=True)
+        secret = SecretFactory()
 
-    def test_user_requires_owner_group_to_update_entry(self):
-        pass
+        response = client.get(reverse("secret:detail", kwargs={"pk": secret.pk}))
 
-    def test_user_cannot_manipulate_owner_group(self):
-        pass
+        assert response.status_code == 200
 
-    def test_success(self):
-        pass
+        response = client.post(
+            reverse("secret:detail", kwargs={"pk": secret.pk}), {"name": "hello world"}
+        )
 
-    def test_view_audit_entry(self):
-        pass
+        assert response.status_code == 302
+        assert response.url == reverse("secret:detail", kwargs={"pk": secret.pk})
 
-    def test_update_audit_entry(self):
-        pass
+        assert Secret.objects.first().name == "hello world"
+
+    def test_user_cannot_view_secret_without_permissions(self, client):
+        login_and_verify_user(client)
+
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:detail", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_user_cannot_change_view_without_permissions(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory()
+
+        response = client.post(
+            reverse("secret:detail", kwargs={"pk": secret.pk}), {"name": "testing 123"}
+        )
+
+        assert response.status_code == 403
+
+        # 'change_secret' permissions are needed
+        assign_perm("view_secret", user, secret)
+
+        response = client.post(
+            reverse("secret:detail", kwargs={"pk": secret.pk}), {"name": "testing 123"}
+        )
+
+        assert response.status_code == 403
+
+    def test_update_success(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        response = client.post(
+            reverse("secret:detail", kwargs={"pk": secret.pk}), {"name": "hello world"}
+        )
+
+        assert response.status_code == 302
+        assert response.url == reverse("secret:detail", kwargs={"pk": secret.pk})
+        secret.refresh_from_db()
+        assert secret.name == "hello world"
+
+    @pytest.mark.freeze_time("2020-08-07 00:01:01")
+    def test_view_audit_entry(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory()
+
+        assign_perm("view_secret", user, secret)
+
+        client.get(reverse("secret:detail", kwargs={"pk": secret.pk}))
+
+        assert Audit.objects.count() == 1
+        audit = Audit.objects.first()
+
+        assert audit.action == Actions.viewed_secret.name
+        assert audit.timestamp == timezone.now()
+        assert audit.user == user
+        assert audit.secret == secret
+
+    @pytest.mark.freeze_time("2020-08-07 00:01:01")
+    def test_update_audit_entry(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        client.post(reverse("secret:detail", kwargs={"pk": secret.pk}), {"name": "hello world"})
+
+        assert Audit.objects.count() == 1
+        audit = Audit.objects.first()
+
+        assert audit.action == Actions.updated_secret.name
+        assert audit.timestamp == timezone.now()
+        assert audit.user == user
+        assert audit.secret == secret
 
 
 class TestCreateVew:
@@ -80,20 +153,317 @@ class TestCreateVew:
         assert response.status_code == 302
         assert response.url == reverse("authbroker_client:login")
 
-    def test_verification_rerequired(self):
-        pass
+    def test_page_load_unverfied(self, client):
+        login_and_verify_user(client, verify=False)
 
-    def test_page_load(self):
-        pass
+        response = client.get(reverse("secret:create"))
 
-    def test_redirects_to_update_view_on_success(self):
-        pass
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
 
-    def test_user_cannot_manipulate_owner_group(self):
-        pass
+    def test_redirects_to_update_view_on_success(self, client):
+        login_and_verify_user(client)
 
-    def test_create_audit_entry(self):
-        pass
+        response = client.post(reverse("secret:create"), {"name": "test secret"})
 
-    def test_success(self):
-        pass
+        assert Secret.objects.count() == 1
+        secret = Secret.objects.first()
+        assert secret.name == "test secret"
+
+        assert response.status_code == 302
+        assert response.url == reverse("secret:detail", kwargs={"pk": secret.id})
+
+    def test_user_owns_secret(self, client):
+        user = login_and_verify_user(client)
+
+        client.post(reverse("secret:create"), {"name": "test secret"})
+
+        assert Secret.objects.count() == 1
+        secret = Secret.objects.first()
+
+        assert user.has_perm("view_secret", secret)
+        assert user.has_perm("change_secret", secret)
+
+    @pytest.mark.freeze_time("2020-08-07 00:01:01")
+    def test_create_audit_entry(self, client):
+        user = login_and_verify_user(client)
+
+        client.post(reverse("secret:create"), {"name": "test secret"})
+
+        assert Audit.objects.count() == 1
+        audit = Audit.objects.first()
+        assert Secret.objects.count() == 1
+        secret = Secret.objects.first()
+
+        assert audit.timestamp == timezone.now()
+        assert audit.user == user
+        assert audit.secret == secret
+        assert audit.action == Actions.created_secret.name
+
+
+class TestSecretPermissionsView:
+    def test_page_requires_auth(self, client):
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:permissions", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url == reverse("authbroker_client:login")
+
+    def test_page_requires_2fa_verification(self, client):
+        secret = SecretFactory()
+        login_and_verify_user(client, verify=False)
+
+        response = client.get(reverse("secret:permissions", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_viewing_page_requires_view_permission(self, client):
+        login_and_verify_user(client)
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:permissions", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_successful_page_load(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:permissions", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 200
+        assert response.template_name == ["secret/permissions.html"]
+
+    def test_requires_change_permission_to_add_permission(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.post(reverse("secret:permissions", kwargs={"pk": secret.pk}), {})
+
+        assert response.status_code == 403
+
+    @pytest.mark.parametrize(
+        "permission, expected",
+        [("change_secret", {"view_secret", "change_secret"}), ("view_secret", {"view_secret"}),],
+    )
+    def test_add_user_permissions(self, permission, expected, client):
+
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        target_user = UserFactory()
+
+        response = client.post(
+            reverse("secret:permissions", kwargs={"pk": secret.pk}),
+            {"user": target_user.id, "permission": permission},
+        )
+
+        assert response.status_code == 302
+        assert set(get_perms(target_user, secret)) == expected
+
+    @pytest.mark.parametrize(
+        "permission, expected",
+        [("change_secret", {"view_secret", "change_secret"}), ("view_secret", {"view_secret"}),],
+    )
+    def test_add_group_permissions(self, permission, expected, client):
+        secret = SecretFactory()
+
+        permission_url = reverse("secret:permissions", kwargs={"pk": secret.pk})
+
+        target_group = GroupFactory()
+        user = login_and_verify_user(client)
+
+        assign_perm("change_secret", user, secret)
+
+        response = client.post(
+            permission_url, {"group": target_group.id, "permission": permission},
+        )
+
+        assert response.status_code == 302
+        assert response.url == permission_url
+        assert set(get_perms(target_group, secret)) == expected
+
+    @pytest.mark.freeze_time("2020-08-07 00:01:01")
+    def test_verify_audit_events_are_created(self, client):
+        secret = SecretFactory()
+
+        permission_url = reverse("secret:permissions", kwargs={"pk": secret.pk})
+        user = login_and_verify_user(client)
+
+        assign_perm("change_secret", user, secret)
+
+        target_user = UserFactory()
+
+        assert Audit.objects.count() == 0
+        response = client.post(
+            permission_url, {"user": target_user.id, "permission": "change_secret"},
+        )
+
+        assert response.status_code == 302
+        assert response.url == permission_url
+
+        assert Audit.objects.count() == 1
+        audit = Audit.objects.first()
+
+        assert audit.user == user
+        assert audit.timestamp == timezone.now()
+        assert audit.secret == secret
+        assert audit.action == Actions.add_permission.name
+        assert audit.description == f"change_secret granted to {target_user}"
+
+
+class TestSecretPermissionsDeleteView:
+    def test_page_requires_auth(self, client):
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:delete-permission", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url == reverse("authbroker_client:login")
+
+    def test_page_requires_2fa_verification(self, client):
+        secret = SecretFactory()
+        login_and_verify_user(client, verify=False)
+
+        response = client.get(reverse("secret:delete-permission", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_viewing_page_requires_change_permission(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:delete-permission", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:delete-permission", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_load_page(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        response = client.get(
+            reverse("secret:delete-permission", kwargs={"pk": secret.pk})
+            + f"?user={user.id}&permission=change_secret"
+        )
+
+        assert response.status_code == 200
+
+    def test_delete_user_permission(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        target_user = UserFactory()
+        assign_perm("change_secret", target_user, secret)
+        assign_perm("view_secret", target_user, secret)
+
+        response = client.post(
+            reverse("secret:delete-permission", kwargs={"pk": secret.pk}),
+            {"user": target_user.id, "permission": "view_secret"},
+        )
+
+        assert response.status_code == 302
+        assert response.url == reverse("secret:permissions", kwargs={"pk": secret.id})
+        assert get_perms(target_user, secret) == ["change_secret"]
+
+    def test_delete_group_permission(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        target_group = GroupFactory()
+        assign_perm("change_secret", target_group, secret)
+        assign_perm("view_secret", target_group, secret)
+
+        response = client.post(
+            reverse("secret:delete-permission", kwargs={"pk": secret.pk}),
+            {"group": target_group.id, "permission": "view_secret"},
+        )
+
+        assert response.status_code == 302
+        assert response.url == reverse("secret:permissions", kwargs={"pk": secret.id})
+        assert get_perms(target_group, secret) == ["change_secret"]
+
+    @pytest.mark.freeze_time("2020-08-07 00:01:01")
+    def test_audit_event_is_created(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        target_group = GroupFactory()
+        assign_perm("change_secret", target_group, secret)
+        assign_perm("view_secret", target_group, secret)
+
+        response = client.post(
+            reverse("secret:delete-permission", kwargs={"pk": secret.pk}),
+            {"group": target_group.id, "permission": "view_secret"},
+        )
+
+        assert response.status_code == 302
+
+        assert Audit.objects.count() == 1
+        audit = Audit.objects.first()
+
+        assert audit.user == user
+        assert audit.timestamp == timezone.now()
+        assert audit.secret == secret
+        assert audit.description == f"view_secret removed for {target_group}"
+
+
+class TestSecretAuditView:
+    def test_page_requires_auth(self, client):
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:audit", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url == reverse("authbroker_client:login")
+
+    def test_page_requires_2fa_verification(self, client):
+        secret = SecretFactory()
+        login_and_verify_user(client, verify=False)
+
+        response = client.get(reverse("secret:audit", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_viewing_page_requires_view_permission(self, client):
+        login_and_verify_user(client)
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:audit", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_page_load(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:audit", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 200
+        assert response.template_name == ["secret/secret_audit.html"]
