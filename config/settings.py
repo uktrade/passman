@@ -172,6 +172,7 @@ CRYPTOGRAPHY_SALT = env("CRYPTOGRAPHY_SALT")
 # guardian config
 
 GUARDIAN_MONKEY_PATCH = False
+GUARDIAN_RENDER_403 = True
 
 # OTP / 2FA config
 
