@@ -6,6 +6,9 @@ from django.urls import reverse_lazy
 import dj_database_url
 import environ
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -152,6 +155,15 @@ STAFF_SSO_USER_CREATE_FUNC = lambda profile: dict(  # noqa
 PUBLIC_VIEWS = [
     reverse_lazy("user:logged-out"),
 ]
+
+# sentry config
+
+if not DEBUG:
+    sentry_sdk.init(
+        env("SENTRY_DSN"),
+        environment=env("SENTRY_ENVIRONMENT"),
+        integrations=[DjangoIntegration()],
+    )
 
 # crispy forms config
 
