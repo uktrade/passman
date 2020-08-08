@@ -1,9 +1,11 @@
 import os
+import sys
 
 from django.contrib.messages import constants as messages
 from django.urls import reverse_lazy
 
 import dj_database_url
+from django_log_formatter_ecs import ECSFormatter
 import environ
 
 import sentry_sdk
@@ -64,6 +66,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.ProtectAllViewsMiddleware",
+    "core.middleware.AccessLoggingMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -192,6 +195,30 @@ REQUIRE_2FA = True
 OTP_LOGIN_URL = reverse_lazy("twofactor:verify")
 OTP_HOTP_ISSUER = env("OTP_HOTP_ISSUER", default="Passman")
 OTP_TOTP_ISSUER = OTP_HOTP_ISSUER
+
+# configure logging
+
+LOGGING = {
+    "version": 1,
+    "formatters": {
+        "ecs_formatter": {"()": ECSFormatter,},
+        "console": {"format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"},
+    },
+    "handlers": {
+        "ecs": {
+            "formatter": "ecs_formatter",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+        },
+        "console": {"class": "logging.StreamHandler", "formatter": "console",},
+    },
+    "loggers": {
+        "": {"handlers": ["ecs"], "level": env("ROOT_LOG_LEVEL", default="DEBUG")},
+        "security.audit": {"handlers": ["ecs",], "level": "INFO", "propagate": True,},
+    },
+}
+
+DLFE_APP_NAME = "staff-sso"
 
 # audit event config
 
