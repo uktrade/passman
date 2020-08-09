@@ -6,6 +6,11 @@ from django.urls import reverse
 from django_cryptography.fields import encrypt
 from guardian.models import UserObjectPermissionBase
 from guardian.models import GroupObjectPermissionBase
+from guardian.shortcuts import (
+    assign_perm,
+    get_perms,
+    remove_perm,
+)
 
 
 class Secret(models.Model):
@@ -31,6 +36,25 @@ class Secret(models.Model):
 
     class Meta:
         ordering = ("name",)
+
+    def set_permission(self, target, permission):
+        current_perms = set(get_perms(target, self))
+
+        required_perms = (
+            {"view_secret", "change_secret"} if permission == "change_secret" else {"view_secret"}
+        )
+
+        for permission in list(required_perms.difference(current_perms)):
+            assign_perm(permission, target, self)
+
+        for permission in list(current_perms.difference(required_perms)):
+            remove_perm(permission, target, self)
+
+    def remove_permissions(self, target):
+        permissions = get_perms(target, self)
+
+        for perm in permissions:
+            remove_perm(perm, target, self)
 
 
 class SecretUserObjectPermission(UserObjectPermissionBase):
