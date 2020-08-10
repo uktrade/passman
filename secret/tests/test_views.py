@@ -318,7 +318,7 @@ class TestSecretPermissionsView:
         assert audit.timestamp == timezone.now()
         assert audit.secret == secret
         assert audit.action == Actions.add_permission.name
-        assert audit.description == f"change_secret granted to {target_user}"
+        assert audit.description == f"Permission level to set change_secret for {target_user}"
 
 
 class TestSecretPermissionsDeleteView:
@@ -377,15 +377,14 @@ class TestSecretPermissionsDeleteView:
         assign_perm("view_secret", target_user, secret)
 
         response = client.post(
-            reverse("secret:delete-permission", kwargs={"pk": secret.pk}),
-            {"user": target_user.id, "permission": "view_secret"},
+            reverse("secret:delete-permission", kwargs={"pk": secret.pk}), {"user": target_user.id},
         )
 
         assert response.status_code == 302
         assert response.url == reverse("secret:permissions", kwargs={"pk": secret.id})
-        assert get_perms(target_user, secret) == ["change_secret"]
+        assert get_perms(target_user, secret) == []
 
-    def test_delete_group_permission(self, client):
+    def test_delete_group_permissions(self, client):
         user = login_and_verify_user(client)
         secret = SecretFactory()
 
@@ -397,12 +396,12 @@ class TestSecretPermissionsDeleteView:
 
         response = client.post(
             reverse("secret:delete-permission", kwargs={"pk": secret.pk}),
-            {"group": target_group.id, "permission": "view_secret"},
+            {"group": target_group.id},
         )
 
         assert response.status_code == 302
         assert response.url == reverse("secret:permissions", kwargs={"pk": secret.id})
-        assert get_perms(target_group, secret) == ["change_secret"]
+        assert get_perms(target_group, secret) == []
 
     @pytest.mark.freeze_time("2020-08-07 00:01:01")
     def test_audit_event_is_created(self, client):
@@ -428,7 +427,7 @@ class TestSecretPermissionsDeleteView:
         assert audit.user == user
         assert audit.timestamp == timezone.now()
         assert audit.secret == secret
-        assert audit.description == f"view_secret removed for {target_group}"
+        assert audit.description == f"Access removed for {target_group}"
 
 
 class TestSecretAuditView:

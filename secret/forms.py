@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 
 from crispy_forms.bootstrap import PrependedAppendedText, AppendedText, FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Layout, Row, Submit
+from crispy_forms.layout import Column, Field, Layout, Row, Submit
 
 from .models import Secret
 
@@ -74,8 +74,27 @@ class SecretCreateForm(SecretUpdateForm):
         self.helper.layout[-1] = FormActions(Submit("save", "Create secret"),)
 
 
-class SecretPermissionsForm(forms.Form):
+# class SecretPermissionsDeleteForm(forms.Form):
+#     user = forms.ModelChoiceField(
+#         queryset=get_user_model().objects.all().exclude(email="AnonymousUser"),
+#         required=False,
+#         widget=forms.HiddenInput(),
+#     )
+#     group = forms.ModelChoiceField(
+#         queryset=Group.objects.all().order_by("name"), required=False, widget=forms.HiddenInput(),
+#     )
+#     permission = forms.ChoiceField(choices=PERMISSION_CHOICES, widget=forms.HiddenInput(),)
+#
+#     def clean(self):
+#         cleaned_data = super().clean()
+#
+#         if not cleaned_data["user"] and not cleaned_data["group"]:
+#             raise forms.ValidationError("Select either a user or a group")
+#
+#         return cleaned_data
 
+
+class SecretPermissionsForm(forms.Form):
     user = forms.ModelChoiceField(
         queryset=get_user_model().objects.all().exclude(email="AnonymousUser"),
         required=False,
@@ -85,6 +104,20 @@ class SecretPermissionsForm(forms.Form):
         queryset=Group.objects.all().order_by("name"), required=False, widget=forms.HiddenInput(),
     )
     permission = forms.ChoiceField(choices=PERMISSION_CHOICES, widget=forms.HiddenInput(),)
+
+    def __init__(self, *args, update_permission=False, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if update_permission:
+            self.fields["permission"].widget = forms.Select()
+            self.fields["permission"].choices = PERMISSION_CHOICES
+
+            self.helper = FormHelper()
+            self.helper.form_class = "update_perms"
+            self.helper.form_show_labels = False
+            self.helper.layout = Layout(
+                "user", "group", Field("permission", css_class="form-control-sm"),
+            )
 
     def clean(self):
         cleaned_data = super().clean()

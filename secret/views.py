@@ -1,5 +1,8 @@
+import logging
+
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.models import Group
 from django.views.generic import FormView, TemplateView
 from django.views.generic.base import ContextMixin
 from django.views.generic.detail import DetailView
@@ -14,17 +17,16 @@ from guardian.shortcuts import (
     assign_perm,
     get_groups_with_perms,
     get_users_with_perms,
-    remove_perm,
 )
 from guardian.decorators import permission_required_or_403
 from django_otp.decorators import otp_required
 
 from audit.models import Actions, Audit, create_audit_event
+from user.models import User
 from .filters import SecretFilter
 from .forms import (
     EDIT_SECRET_PERMISSION,
     VIEW_SECRET_PERMISSION,
-    PERMISSION_CHOICES,
     SecretCreateForm,
     SecretUpdateForm,
     SecretPermissionsForm,
@@ -32,6 +34,9 @@ from .forms import (
     SecretUserPermissionsForm,
 )
 from .models import Secret
+
+
+logger = logging.getLogger(__name__)
 
 
 class SecretListView(FilterView):
@@ -136,42 +141,65 @@ class SecretPermissionsDeleteView(DetailView):
     template_name = "secret/confirm-delete.html"
     object = None
 
+    def get_target_object(self):
+
+        request_dict = self.request.POST if self.request.method == "POST" else self.request.GET
+
+        user_pk = request_dict.get("user", None)
+        group_pk = request_dict.get("group", None)
+
+        user, group = None, None
+
+        if user_pk:
+            try:
+                user = User.objects.get(pk=int(user_pk))
+            except (User.DoesNotExist, TypeError):
+                pass
+            return "user", user
+
+        if group_pk:
+            try:
+                group = Group.objects.get(pk=int(group_pk))
+            except (Group.DoesNotExist, TypeError):
+                pass
+            return "group", group
+
+        return None, None
+
     def redirect_to_permissions_list(self, *message_params):
         messages.add_message(self.request, *message_params)
         return redirect("secret:permissions", **self.kwargs)
 
     def get(self, request, *args, **kwargs):
-        form = SecretPermissionsForm(request.GET)
-        if not form.is_valid():
+        object_type, target = self.get_target_object()
+
+        if not target:
             return self.redirect_to_permissions_list(messages.ERROR, "Invalid parameters")
 
         self.object = self.get_object()
         context = self.get_context_data(object=self.object)
 
-        context.update(form.cleaned_data)
-        context["permission_display"] = dict(PERMISSION_CHOICES)[context["permission"]]
-        context["form"] = form
+        context.update({"target": target, "object_type": object_type})
 
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
 
-        form = SecretPermissionsForm(request.POST)
-        if not form.is_valid():
+        object_type, target = self.get_target_object()
+
+        if not target:
             return self.redirect_to_permissions_list(messages.ERROR, "Invalid parameters")
 
-        object = form.cleaned_data["user"] or form.cleaned_data["group"]
-
-        remove_perm(form.cleaned_data["permission"], object, self.get_object())
+        self.get_object().remove_permissions(target)
 
         create_audit_event(
             self.request.user,
             Actions.remove_permission,
             secret=self.get_object(),
-            description=f'{form.cleaned_data["permission"]} removed for {object}',
+            description=f"Access removed for {target}",
         )
 
-        return self.redirect_to_permissions_list(messages.INFO, "Permission removed")
+        return self.redirect_to_permissions_list(messages.INFO, f"Access removed for {target}")
 
     def get_context_data(self, **kwargs):
 
@@ -209,41 +237,24 @@ class SecretPermissionsView(FormView):
         secret = Secret.objects.get(pk=self.kwargs["pk"])
 
         http_response = super().form_valid(form)
-        assignee = form.cleaned_data.get("user", form.cleaned_data.get("group"))
 
-        assert assignee
+        target = form.cleaned_data.get("user", form.cleaned_data.get("group"))
+        assert target
 
-        # if the user has been granted change permissions also give them view permission
-        if form.cleaned_data["permission"] == EDIT_SECRET_PERMISSION:
-            assign_perm(VIEW_SECRET_PERMISSION, assignee, secret)
-
-        assign_perm(form.cleaned_data["permission"], assignee, secret)
-
-        secret = Secret.objects.get(pk=self.kwargs["pk"])
+        secret.set_permission(target, form.cleaned_data["permission"])
 
         create_audit_event(
             self.request.user,
             Actions.add_permission,
             secret=secret,
-            description=f'{form.cleaned_data["permission"]} granted to {assignee}',
+            description=f'Permission level to set {form.cleaned_data["permission"]} for {target}',
         )
 
-        messages.info(self.request, "Permission added")
+        messages.info(self.request, f"Permissions updated for {target}")
+
         return http_response
 
     def get_context_data(self, **kwargs):
-        perm_display = dict(PERMISSION_CHOICES)
-
-        def _flatten_perms(items):
-            """change `{user: [perm1, perm2]}` to `[(user, perm1), (user, perm2)]]` we're also removing additional
-            perms i.e. superusers have additional perms: add_secret, delete_secret which aren't relevant, so they
-            are skipped. We also provide a display-friendly perm-name."""
-
-            return [
-                (user, (perm, perm_display.get(perm, perm)))
-                for user, perms in items.items()
-                for perm in perms
-            ]
 
         context = ContextMixin.get_context_data(self, **kwargs)
 
@@ -261,15 +272,38 @@ class SecretPermissionsView(FormView):
 
         secret = Secret.objects.get(pk=pk)
 
-        context["users"] = _flatten_perms(
-            get_users_with_perms(
-                secret,
-                attach_perms=True,
-                with_superusers=False,
-                with_group_users=False,
-                only_with_perms_in=[EDIT_SECRET_PERMISSION, VIEW_SECRET_PERMISSION],
-            )
+        users = get_users_with_perms(
+            secret,
+            attach_perms=True,
+            with_superusers=False,
+            with_group_users=False,
+            only_with_perms_in=[EDIT_SECRET_PERMISSION, VIEW_SECRET_PERMISSION],
         )
-        context["groups"] = _flatten_perms(get_groups_with_perms(secret, attach_perms=True))
+
+        def select_perm(perms):
+            return "change_secret" if "change_secret" in perms else "view_secret"
+
+        context["users"] = [
+            {
+                "user": user,
+                "form": SecretPermissionsForm(
+                    update_permission=True,
+                    initial={"user": user, "permission": select_perm(perms)},
+                ),
+            }
+            for user, perms in users.items()
+        ]
+        groups = get_groups_with_perms(secret, attach_perms=True)
+
+        context["groups"] = [
+            {
+                "group": group,
+                "form": SecretPermissionsForm(
+                    update_permission=True,
+                    initial={"group": group, "permission": select_perm(perms)},
+                ),
+            }
+            for group, perms in groups.items()
+        ]
 
         return context
