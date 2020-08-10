@@ -243,7 +243,6 @@ class SecretPermissionsView(FormView):
                 (user, (perm, perm_display.get(perm, perm)))
                 for user, perms in items.items()
                 for perm in perms
-                if perm in [EDIT_SECRET_PERMISSION, VIEW_SECRET_PERMISSION]
             ]
 
         context = ContextMixin.get_context_data(self, **kwargs)
@@ -266,6 +265,8 @@ class SecretPermissionsView(FormView):
             get_users_with_perms(
                 secret,
                 attach_perms=True,
+                with_superusers=False,
+                with_group_users=False,
                 only_with_perms_in=[EDIT_SECRET_PERMISSION, VIEW_SECRET_PERMISSION],
             )
         )

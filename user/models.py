@@ -4,6 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from guardian.mixins import GuardianUserMixin
 
+from .managers import UserManager
+
 
 class User(AbstractBaseUser, PermissionsMixin, GuardianUserMixin):
     USERNAME_FIELD = "email"
@@ -28,6 +30,8 @@ class User(AbstractBaseUser, PermissionsMixin, GuardianUserMixin):
         default=False,
         help_text=_("Designates whether the user can log into this admin site."),
     )
+
+    objects = UserManager()
 
     def __str__(self):
         return self.email

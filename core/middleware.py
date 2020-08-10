@@ -21,15 +21,11 @@ class ProtectAllViewsMiddleware:
             ):
                 return redirect("authbroker_client:login")
         else:
-            # user is disabled
-            if not request.user.is_active and request.path != reverse("user:disabled"):
-                return redirect("user:disabled")
-
             # user is not enrolled for 2fa
             if (
                 require_2fa
                 and not user_has_device(request.user)
-                and request.path not in [reverse("twofactor:enroll"), reverse("twofactor:verify")]
+                and request.path != reverse("twofactor:enroll")
             ):
                 return redirect("twofactor:enroll")
 

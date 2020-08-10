@@ -7,9 +7,4 @@ urlpatterns = [
     path(
         "logged-out", TemplateView.as_view(template_name="user/logged-out.html"), name="logged-out",
     ),
-    path(
-        "disabled",
-        TemplateView.as_view(template_name="user/account-disabled.html"),
-        name="disabled",
-    ),
 ]
