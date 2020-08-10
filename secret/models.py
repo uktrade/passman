@@ -8,9 +8,12 @@ from guardian.models import UserObjectPermissionBase
 from guardian.models import GroupObjectPermissionBase
 from guardian.shortcuts import (
     assign_perm,
-    get_perms,
+    get_user_perms,
+    get_group_perms,
     remove_perm,
 )
+
+from user.models import User
 
 
 class Secret(models.Model):
@@ -28,17 +31,23 @@ class Secret(models.Model):
     password = encrypt(models.CharField(max_length=255, blank=True))
     details = encrypt(models.TextField(blank=True))
 
+    class Meta:
+        ordering = ("name",)
+
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
         return reverse("secret:detail", args=[self.id])
 
-    class Meta:
-        ordering = ("name",)
+    def _get_perms(self, target):
+        if isinstance(target, User):
+            return get_user_perms(target, self)
+        else:
+            return get_group_perms(target, self)
 
     def set_permission(self, target, permission):
-        current_perms = set(get_perms(target, self))
+        current_perms = set(self._get_perms(target))
 
         required_perms = (
             {"view_secret", "change_secret"} if permission == "change_secret" else {"view_secret"}
@@ -51,7 +60,7 @@ class Secret(models.Model):
             remove_perm(permission, target, self)
 
     def remove_permissions(self, target):
-        permissions = get_perms(target, self)
+        permissions = self._get_perms(target)
 
         for perm in permissions:
             remove_perm(perm, target, self)

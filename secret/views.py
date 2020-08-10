@@ -233,7 +233,6 @@ class SecretPermissionsView(FormView):
             return SecretUserPermissionsForm
 
     def form_valid(self, form):
-
         secret = Secret.objects.get(pk=self.kwargs["pk"])
 
         http_response = super().form_valid(form)
