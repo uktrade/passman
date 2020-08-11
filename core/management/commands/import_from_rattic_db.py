@@ -6,7 +6,9 @@ from django.contrib.auth.models import Group
 import psycopg2
 import psycopg2.extras
 
+from audit.models import Audit
 from secret.models import Secret
+from user.models import User
 
 GET_CRED_SQL = (
     "SELECT cc.*, ag.name as owner_group_name FROM cred_cred as cc "
@@ -19,12 +21,44 @@ GET_VIEWER_GROUPS = (
     "INNER JOIN cred_cred_groups as ccg ON ag.id = ccg.group_id "
     "WHERE ccg.cred_id = {};"
 )
+GET_AUDIT_SQL = (
+    "SELECT cca.audittype, au.email, cca.time FROM cred_credaudit cca "
+    "INNER JOIN auth_user au ON cca.user_id = au.id "
+    "WHERE cca.cred_id = {} "
+    "ORDER BY time;"
+)
+
 CHANGE_PERM = "change_secret"
 VIEW_PERM = "view_secret"
 
+# rattic audit actions
+CREDADD = "A"
+CREDCHANGE = "C"
+CREDMETACHANGE = "M"
+CREDVIEW = "V"
+CREDEXPORT = "X"
+CREDPASSVIEW = "P"
+CREDDELETE = "D"
+CREDSCHEDCHANGE = "S"
+CREDAUDITCHOICES = dict(
+    (
+        (CREDADD, "Added"),
+        (CREDCHANGE, "Changed"),
+        (CREDMETACHANGE, "Only Metadata Changed"),
+        (CREDVIEW, "Only Details Viewed"),
+        (CREDEXPORT, "Exported"),
+        (CREDDELETE, "Deleted"),
+        (CREDSCHEDCHANGE, "Scheduled For Change"),
+        (CREDPASSVIEW, "Password Viewed"),
+    )
+)
+
 
 class Command(BaseCommand):
-    help = "Import the group and cred data from an existing Ratticweb database"
+    help = (
+        "Import credential, group and audit data from an existing Ratticweb database "
+        "NOTE: this command is not idempotent"
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -61,6 +95,15 @@ class Command(BaseCommand):
         for row in rows:
             yield row[0]
 
+    def get_audit_events(self, conn, cred_id):
+        """return a list of audit events"""
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute(GET_AUDIT_SQL.format(cred_id))
+
+        rows = cur.fetchall()
+        for row in rows:
+            yield row[0], row[1], row[2]
+
     def import_groups(self, conn, dry_run):
         """ Import groups from rattic into passman """
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -70,7 +113,7 @@ class Command(BaseCommand):
         for count, row in enumerate(rows, 1):
             self.stdout.write("importing group: " + row[0])
             if not dry_run:
-                Group.objects.create(name=row[0])
+                Group.objects.get_or_create(name=row[0])
 
         return count
 
@@ -100,13 +143,34 @@ class Command(BaseCommand):
 
                     secret.set_permission(og, CHANGE_PERM)
 
-            for vg_name in self.get_viewer_groups(conn, row[0]):
+            cred_id = row[0]
+
+            for vg_name in self.get_viewer_groups(conn, cred_id):
                 self.stdout.write(f"giving vieww permissions for viewer group: {vg_name}")
 
                 if not dry_run:
                     vg = Group.objects.get(name=vg_name)
 
                     secret.set_permission(vg, VIEW_PERM)
+
+            anon_user = User.objects.get(email="AnonymousUser")
+
+            # import audit events
+            for audit_type, user, timestamp in self.get_audit_events(conn, cred_id):
+                audit_display = CREDAUDITCHOICES[audit_type]
+                ts_string = timestamp.strftime("%x %X%Z")
+                audit_details = f"[Rattic Import] {audit_display} by {user} on {ts_string}"
+
+                self.stdout.write(f"adding audit event: {audit_display}")
+
+                if not dry_run:
+                    Audit.objects.create(
+                        user=anon_user,
+                        secret=secret,
+                        action="imported",
+                        description=audit_details,
+                        timestamp=timestamp,
+                    )
 
         return count
 

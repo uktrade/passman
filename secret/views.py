@@ -74,7 +74,7 @@ class SecretCreateView(CreateView):
         assign_perm(EDIT_SECRET_PERMISSION, self.request.user, self.object)
         assign_perm(VIEW_SECRET_PERMISSION, self.request.user, self.object)
 
-        create_audit_event(self.request.user, Actions.created_secret, secret=self.object)
+        create_audit_event(self.request.user, Actions.create_secret, secret=self.object)
         return http_response
 
 
@@ -92,13 +92,13 @@ class SecretDetailView(UpdateView):
 
     def get(self, request, *args, **kwargs):
         create_audit_event(
-            self.request.user, Actions.viewed_secret, secret=self.get_object(), report_once=True,
+            self.request.user, Actions.view_secret, secret=self.get_object(), report_once=True,
         )
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
         messages.info(self.request, "Secret updated")
-        create_audit_event(self.request.user, Actions.updated_secret, secret=self.get_object())
+        create_audit_event(self.request.user, Actions.update_secret, secret=self.get_object())
 
         return super().form_valid(form)
 
