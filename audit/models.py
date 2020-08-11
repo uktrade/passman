@@ -33,14 +33,17 @@ def create_audit_event(user, action: Actions, description=None, secret=None, rep
     If `report_once` is True, then the event will not be created if an event with the same user & action exists
     within the `settings.AUDIT_EVENT_REPEAT_AFTER_MINUTES` period.
     """
-
     if report_once:
         report_window_start = timezone.now() - dt.timedelta(
             minutes=settings.AUDIT_EVENT_REPEAT_AFTER_MINUTES
         )
-        if Audit.objects.filter(
-            user=user, action=action.name, timestamp__gte=report_window_start
-        ).exists():
+
+        query = {"user": user, "action": action.name, "timestamp__gte": report_window_start}
+
+        if secret:
+            query["secret"] = secret
+
+        if Audit.objects.filter(**query).exists():
             return
 
     Audit.objects.create(

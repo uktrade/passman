@@ -3,6 +3,7 @@ import pytest
 
 from django.utils import timezone
 
+from secret.tests.factories import SecretFactory
 from user.tests.factories import UserFactory
 
 from audit.models import Actions, Audit, create_audit_event
@@ -79,3 +80,34 @@ def test_create_audit_event():
     assert audit.action == Actions.viewed_secret.name
     assert audit.description == "I viewed a secret"
     assert not audit.secret
+
+
+@pytest.mark.freeze_time("2020-07-25 12:00:01")
+def test_create_audit_event_separate_secrets():
+
+    secret = SecretFactory()
+    secret2 = SecretFactory()
+
+    user = UserFactory()
+    create_audit_event(
+        user,
+        Actions.viewed_secret,
+        description="I viewed a secret",
+        secret=secret,
+        report_once=True,
+    )
+
+    create_audit_event(
+        user,
+        Actions.viewed_secret,
+        description="I viewed another secret",
+        secret=secret2,
+        report_once=True,
+    )
+
+    assert Audit.objects.count() == 2
+
+    audit = Audit.objects.last()
+
+    assert audit.timestamp == timezone.now()
+    assert audit.description == "I viewed another secret"
