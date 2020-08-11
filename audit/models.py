@@ -8,6 +8,7 @@ from .types import StrEnum
 
 
 class Actions(StrEnum):
+    imported = "Imported"
     create_secret = "Created"
     update_secret = "Updated"
     view_secret = "Viewed"
