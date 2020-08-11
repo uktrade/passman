@@ -8,11 +8,11 @@ from .types import StrEnum
 
 
 class Actions(StrEnum):
-    created_secret = "Created"
-    updated_secret = "Updated"
-    viewed_secret = "Viewed"
-    add_permission = "Add permission"
-    remove_permission = "Remove permission"
+    create_secret = "Created"
+    update_secret = "Updated"
+    view_secret = "Viewed"
+    add_permission = "Added permission"
+    remove_permission = "Removed permission"
 
 
 class Audit(models.Model):

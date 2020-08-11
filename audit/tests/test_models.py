@@ -15,14 +15,14 @@ pytestmark = pytest.mark.django_db
 def test_create_audit_event_report_once(settings, freezer):
     user = UserFactory()
     create_audit_event(
-        user, Actions.viewed_secret, description="I viewed a secret", secret=None, report_once=True,
+        user, Actions.view_secret, description="I viewed a secret", secret=None, report_once=True,
     )
 
     assert Audit.objects.count() == 1
 
     create_audit_event(
         user,
-        Actions.viewed_secret,
+        Actions.view_secret,
         description="I viewed another secret",
         secret=None,
         report_once=True,
@@ -33,7 +33,7 @@ def test_create_audit_event_report_once(settings, freezer):
     # different action - so it should be created
     create_audit_event(
         user,
-        Actions.created_secret,
+        Actions.create_secret,
         description="I created a secret",
         secret=None,
         report_once=True,
@@ -45,7 +45,7 @@ def test_create_audit_event_report_once(settings, freezer):
 
     create_audit_event(
         user,
-        Actions.viewed_secret,
+        Actions.view_secret,
         description="I viewed another secret",
         secret=None,
         report_once=True,
@@ -58,11 +58,11 @@ def test_create_audit_event_report_once(settings, freezer):
 def test_create_audit_event_recurring():
 
     user = UserFactory()
-    create_audit_event(user, Actions.viewed_secret, description="I viewed a secret", secret=None)
+    create_audit_event(user, Actions.view_secret, description="I viewed a secret", secret=None)
 
     assert Audit.objects.count() == 1
 
-    create_audit_event(user, Actions.viewed_secret, description="I viewed a secret", secret=None)
+    create_audit_event(user, Actions.view_secret, description="I viewed a secret", secret=None)
 
     assert Audit.objects.count() == 2
 
@@ -71,13 +71,13 @@ def test_create_audit_event_recurring():
 def test_create_audit_event():
 
     user = UserFactory()
-    create_audit_event(user, Actions.viewed_secret, description="I viewed a secret", secret=None)
+    create_audit_event(user, Actions.view_secret, description="I viewed a secret", secret=None)
 
     audit = Audit.objects.first()
 
     assert audit.timestamp == timezone.now()
     assert audit.user == user
-    assert audit.action == Actions.viewed_secret.name
+    assert audit.action == Actions.view_secret.name
     assert audit.description == "I viewed a secret"
     assert not audit.secret
 
@@ -90,16 +90,12 @@ def test_create_audit_event_separate_secrets():
 
     user = UserFactory()
     create_audit_event(
-        user,
-        Actions.viewed_secret,
-        description="I viewed a secret",
-        secret=secret,
-        report_once=True,
+        user, Actions.view_secret, description="I viewed a secret", secret=secret, report_once=True,
     )
 
     create_audit_event(
         user,
-        Actions.viewed_secret,
+        Actions.view_secret,
         description="I viewed another secret",
         secret=secret2,
         report_once=True,

@@ -122,7 +122,7 @@ class TestUpdateView:
         assert Audit.objects.count() == 1
         audit = Audit.objects.first()
 
-        assert audit.action == Actions.viewed_secret.name
+        assert audit.action == Actions.view_secret.name
         assert audit.timestamp == timezone.now()
         assert audit.user == user
         assert audit.secret == secret
@@ -140,7 +140,7 @@ class TestUpdateView:
         assert Audit.objects.count() == 1
         audit = Audit.objects.first()
 
-        assert audit.action == Actions.updated_secret.name
+        assert audit.action == Actions.update_secret.name
         assert audit.timestamp == timezone.now()
         assert audit.user == user
         assert audit.secret == secret
@@ -198,7 +198,7 @@ class TestCreateVew:
         assert audit.timestamp == timezone.now()
         assert audit.user == user
         assert audit.secret == secret
-        assert audit.action == Actions.created_secret.name
+        assert audit.action == Actions.create_secret.name
 
 
 class TestSecretPermissionsView:
