@@ -38,10 +38,10 @@ class Command(BaseCommand):
     def connect_to_rattic_db(self, dbname, user, host, password):
         conn_str = f"dbname='{dbname}' host='{host}'"
         if user:
-            conn_str += " user='{user}'"
+            conn_str += f" user='{user}'"
 
         if password:
-            conn_str += " password='{password}'"
+            conn_str += f" password='{password}'"
 
         try:
             return psycopg2.connect(conn_str)
