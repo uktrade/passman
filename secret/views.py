@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView
 from django.views.generic.base import ContextMixin
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
@@ -116,15 +116,20 @@ class SecretDetailView(UpdateView):
 @method_decorator(
     permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")), name="dispatch",
 )
-class SecretAuditView(TemplateView):
+class SecretAuditView(DetailView):
     template_name = "secret/secret_audit.html"
+    model = Secret
+    object = None
 
     def get_context_data(self, **kwargs):
 
         context = super().get_context_data(**kwargs)
 
-        context["audit_info"] = Audit.objects.filter(secret__pk=kwargs["pk"]).order_by("-timestamp")
+        context["audit_info"] = Audit.objects.filter(secret__pk=self.kwargs["pk"]).order_by(
+            "-timestamp"
+        )
         context["tab"] = "audit"
+        context["pk"] = self.kwargs["pk"]
 
         return context
 
@@ -268,6 +273,7 @@ class SecretPermissionsView(FormView):
 
         pk = context["pk"] = self.kwargs["pk"]
         context["tab"] = "permissions"
+        context["object"] = Secret.objects.get(pk=self.kwargs["pk"])
 
         secret = Secret.objects.get(pk=pk)
 
