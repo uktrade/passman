@@ -9,7 +9,7 @@
 <form method="post" action="{{ request.path }}">
     {{ form | crispy }}
     {% csrf_token %}
-    <input type="hidden" value="{{ next }}">
+    <input type="hidden" name="next" value="{{ next }}">
     <button type="submit" class="btn btn-primary">Verify</button>
 </form>
 

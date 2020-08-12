@@ -79,6 +79,7 @@ class TwoFactorVerifyView(SuccessURLAllowedHostsMixin, FormView):
 
     def get_redirect_url(self):
         """Return the user-originating redirect URL if it's safe."""
+
         redirect_to = self.request.POST.get(
             self.redirect_field_name, self.request.GET.get(self.redirect_field_name, "")
         )
@@ -94,3 +95,9 @@ class TwoFactorVerifyView(SuccessURLAllowedHostsMixin, FormView):
         url = self.get_redirect_url()
 
         return url or self.success_url
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+        context["next"] = self.get_redirect_url()
+        return context
