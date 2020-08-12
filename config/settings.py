@@ -148,6 +148,7 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_URL = reverse_lazy("authbroker_client:login")
 LOGIN_REDIRECT_URL = reverse_lazy("secret:list")
 LOGOUT_REDIRECT_URL = reverse_lazy("user:logged-out")
+USE_X_FORWARDED_HOST = True
 
 STAFF_SSO_ID_FIELD = "email_user_id"
 STAFF_SSO_USER_CREATE_FUNC = lambda profile: dict(  # noqa
