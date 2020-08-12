@@ -17,5 +17,8 @@ class AuditAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def has_change_permission(self, request, obj=None):
+        return False
+
 
 admin_site.register(Audit, AuditAdmin)
