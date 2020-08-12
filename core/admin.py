@@ -1,6 +1,8 @@
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.admin import Group, GroupAdmin
 
+from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin, TOTPDevice
+
 
 class OTPAdminSite(AdminSite):
     def __init__(self, name="otpadmin"):
@@ -16,3 +18,5 @@ class OTPAdminSite(AdminSite):
 
 admin_site = OTPAdminSite()
 admin_site.register(Group, GroupAdmin)
+
+admin_site.register(TOTPDevice, TOTPDeviceAdmin)
