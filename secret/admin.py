@@ -1,7 +1,7 @@
 from guardian.admin import GuardedModelAdmin
 
-from core.admin import admin_site
-from .models import Secret
+from core.admin import admin_site  # noqa: F401
+from .models import Secret  # noqa: F401
 
 
 class SecretAdmin(GuardedModelAdmin):
@@ -17,7 +17,10 @@ class SecretAdmin(GuardedModelAdmin):
         "last_updated",
     )
 
+    exclude = ("password",)
+
     ordering = ("created",)
 
 
-admin_site.register(Secret, SecretAdmin)
+# All password editing should be done through the interface
+# admin_site.register(Secret, SecretAdmin)
