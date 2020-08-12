@@ -113,3 +113,33 @@ class TestTwoFactorVerifyView:
         assert response.status_code == 302
         assert response.url == reverse("secret:list")
         assert client.session["otp_device_id"] == user.totpdevice_set.first().persistent_id
+
+    def test_next_url_on_get(self, client):
+        """Verify that a ?next= querystring is rendered as a hidden form tag"""
+        user = UserFactory(is_active=True, two_factor_enabled=True)
+
+        client.force_login(user)
+
+        response = client.post(reverse("twofactor:verify") + "?next=/hello-world/")
+        body_html = response.content.decode("utf-8")
+
+        assert '<input type="hidden" name="next" value="/hello-world/">' in body_html
+
+    @pytest.mark.parametrize(
+        "next_url, expected",
+        [("http://unsafe", "/"), ("http://also-unsafe", "/"), ("/hello-world/", "/hello-world/"),],
+    )
+    def test_next_url_on_post(self, next_url, expected, client, mocker):
+        user = UserFactory(is_active=True, two_factor_enabled=True)
+
+        verify_token = mocker.patch("django_otp.forms.OTPAuthenticationFormMixin._verify_token")
+        verify_token.return_value = user.totpdevice_set.first()
+
+        client.force_login(user)
+
+        response = client.post(
+            reverse("twofactor:verify"), {"otp_token": "fake-token", "next": next_url}
+        )
+
+        assert response.status_code == 302
+        assert response.url == expected
