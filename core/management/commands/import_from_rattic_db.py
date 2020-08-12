@@ -158,19 +158,21 @@ class Command(BaseCommand):
             # import audit events
             for audit_type, user, timestamp in self.get_audit_events(conn, cred_id):
                 audit_display = CREDAUDITCHOICES[audit_type]
-                ts_string = timestamp.strftime("%x %X%Z")
-                audit_details = f"[Rattic Import] {audit_display} by {user} on {ts_string}"
+                audit_details = f"[Rattic Import] {audit_display} by {user}"
 
                 self.stdout.write(f"adding audit event: {audit_display}")
 
                 if not dry_run:
-                    Audit.objects.create(
+                    audit = Audit.objects.create(
+                        timestamp=timestamp,
                         user=anon_user,
                         secret=secret,
                         action="imported",
                         description=audit_details,
-                        timestamp=timestamp,
                     )
+
+                    audit.timestamp = timestamp
+                    audit.save()
 
         return count
 
