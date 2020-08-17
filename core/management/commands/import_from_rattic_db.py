@@ -153,7 +153,10 @@ class Command(BaseCommand):
             cred_id = row[0]
 
             for vg_name in self.get_viewer_groups(conn, cred_id):
-                self.stdout.write(f"giving vieww permissions for viewer group: {vg_name}")
+                if og_name and og_name == vg_name:
+                    continue
+
+                self.stdout.write(f"giving view permissions for viewer group: {vg_name}")
 
                 if not dry_run:
                     vg = Group.objects.get(name=vg_name)
