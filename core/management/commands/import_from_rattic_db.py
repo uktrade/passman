@@ -27,6 +27,13 @@ GET_AUDIT_SQL = (
     "WHERE cca.cred_id = {} "
     "ORDER BY time;"
 )
+GET_USER_SQL = (
+    "SELECT au.email, string_agg(ag.name, '|') as groups FROM auth_group ag "
+    "INNER JOIN auth_user_groups aug on aug.group_id = ag.id "
+    "INNER JOIN auth_user au on aug.user_id = au.id "
+    "WHERE au.is_active=true "
+    "GROUP BY au.email;"
+)
 
 CHANGE_PERM = "change_secret"
 VIEW_PERM = "view_secret"
@@ -176,6 +183,34 @@ class Command(BaseCommand):
 
         return count
 
+    def import_users(self, conn, dry_run):
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute(GET_USER_SQL)
+
+        rows = cur.fetchall()
+
+        for count, row in enumerate(rows, 1):
+
+            email, groups = row[0].lower(), row[1].split("|")
+
+            self.stdout.write(f"importing user: {email} with groups: {groups}")
+
+            if not dry_run:
+                user, created = User.objects.get_or_create(email=email)
+
+                if created:
+                    self.stdout.write(f"user created {email}")
+                else:
+                    self.stdout.write(f"user found {email}")
+
+                for group in groups:
+                    group = Group.objects.get(name=group)
+                    user.groups.add(group)
+
+                    self.stdout.write(f"adding {email} to {group}")
+
+        return count
+
     @transaction.atomic
     def handle(self, *args, **options):
 
@@ -193,5 +228,9 @@ class Command(BaseCommand):
         total = self.import_secrets(conn, options["dry_run"])
 
         self.stdout.write(f"\nSuccessfully imported {total} secrets")
+
+        total = self.import_users(conn, options["dry_run"])
+
+        self.stdout.write(f"\nSuccessufly imported {total} users")
 
         self.stdout.write(self.style.SUCCESS("Done."))
