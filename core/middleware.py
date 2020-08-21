@@ -28,6 +28,8 @@ class ProtectAllViewsMiddleware:
                 and request.path != reverse("twofactor:enroll")
             ):
                 return redirect("twofactor:enroll")
+            if not request.user.is_active and request.path != reverse("user:disabled"):
+                return redirect("user:disabled")
 
         response = self.get_response(request)
 
