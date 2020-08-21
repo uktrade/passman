@@ -21,7 +21,7 @@ def test_user_without_2fa_is_redirected_to_enrollment_page(client):
 def test_user_disabled(client):
     user = UserFactory(is_active=False, two_factor_enabled=True)
 
-    client.force_login(user, backend="authbroker_client.backends.AuthbrokerBackend")
+    client.force_login(user, backend="core.backends.CustomAuthbrokerBackend")
 
     response = client.get(reverse("secret:list"))
 
