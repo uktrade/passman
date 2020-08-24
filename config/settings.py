@@ -141,7 +141,7 @@ AUTHBROKER_STAFF_SSO_SCOPE = "read write"
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "authbroker_client.backends.AuthbrokerBackend",
+    "core.backends.CustomAuthbrokerBackend",
     "guardian.backends.ObjectPermissionBackend",
 ]
 
@@ -150,10 +150,7 @@ LOGIN_REDIRECT_URL = reverse_lazy("secret:list")
 LOGOUT_REDIRECT_URL = reverse_lazy("user:logged-out")
 USE_X_FORWARDED_HOST = True
 
-STAFF_SSO_ID_FIELD = "email_user_id"
-STAFF_SSO_USER_CREATE_FUNC = lambda profile: dict(  # noqa
-    is_active=True, first_name=profile["first_name"], last_name=profile["last_name"]
-)
+AUTHBROKER_PROFILE_ID_FIELD_NAME = "email_user_id"
 
 PUBLIC_VIEWS = [
     reverse_lazy("user:logged-out"),
