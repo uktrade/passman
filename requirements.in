@@ -10,7 +10,6 @@ django-cryptography
 django-guardian
 django-otp
 qrcode
-django-log-formatter-ecs
 
 whitenoise
 gunicorn

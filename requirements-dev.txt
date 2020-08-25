@@ -24,8 +24,6 @@ django-cryptography==1.0  # via -r requirements.txt
 django-environ==0.4.5     # via -r requirements.txt
 django-filter==2.3.0      # via -r requirements.txt
 django-guardian==2.3.0    # via -r requirements.txt
-django-ipware==3.0.1      # via -r requirements.txt, django-log-formatter-ecs
-django-log-formatter-ecs==0.0.3  # via -r requirements.txt
 django-otp==0.9.3         # via -r requirements.txt
 git+https://github.com/uktrade/django-staff-sso-client.git@add_email_id_support#egg=django-staff-sso-client  # via -r requirements.txt
 django==3.0.8             # via -r requirements.txt, django-appconf, django-filter, django-guardian, django-otp, django-staff-sso-client
@@ -43,9 +41,7 @@ identify==1.4.25          # via pre-commit
 idna==2.10                # via -r requirements.txt, requests
 importlib-metadata==1.7.0  # via flake8, pluggy, pre-commit, pytest, virtualenv
 isort==4.3.21             # via -r requirements-dev.in
-kubi-ecs-logger==0.1.0    # via -r requirements.txt, django-log-formatter-ecs
 lxml==4.5.2               # via -r requirements-dev.in
-marshmallow==3.6.1        # via -r requirements.txt, kubi-ecs-logger
 mccabe==0.6.1             # via flake8
 mohawk==1.1.0             # via -r requirements-dev.in
 more-itertools==8.4.0     # via pytest

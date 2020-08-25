@@ -1,13 +1,8 @@
-import logging
-
 from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import resolve, reverse
 
 from django_otp import user_has_device
-
-
-SECURITY_LOGGER_NAME = "security.audit"
 
 
 class ProtectAllViewsMiddleware:
@@ -37,21 +32,5 @@ class ProtectAllViewsMiddleware:
                 return redirect("user:disabled")
 
         response = self.get_response(request)
-
-        return response
-
-
-class AccessLoggingMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-        self.logger = logging.getLogger(SECURITY_LOGGER_NAME)
-
-    def __call__(self, request):
-
-        self.logger.info({"path": request.path, "user": request.user})
-
-        response = self.get_response(request)
-
-        self.logger.info({"status_code": response.status_code, "user": request.user})
 
         return response
