@@ -3,9 +3,10 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group
-from django.views.generic import FormView
-from django.views.generic.base import ContextMixin
-from django.views.generic.detail import DetailView
+from django.core.exceptions import ObjectDoesNotExist
+from django.views.generic import DeleteView, FormView
+from django.views.generic.base import ContextMixin, TemplateView
+from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse
 from django.shortcuts import redirect
@@ -16,6 +17,7 @@ from django_filters.views import FilterView
 from guardian.shortcuts import (
     assign_perm,
     get_groups_with_perms,
+    get_user_perms,
     get_users_with_perms,
 )
 from guardian.decorators import permission_required_or_403
@@ -27,6 +29,7 @@ from .filters import SecretFilter
 from .forms import (
     EDIT_SECRET_PERMISSION,
     VIEW_SECRET_PERMISSION,
+    MFAClientSetupForm,
     SecretCreateForm,
     SecretUpdateForm,
     SecretPermissionsForm,
@@ -312,3 +315,100 @@ class SecretPermissionsView(FormView):
         ]
 
         return context
+
+
+@method_decorator(otp_required, name="dispatch")
+@method_decorator(
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="dispatch",
+)
+class SecretMFASetupView(SingleObjectMixin, FormView):
+    template_name = "secret/mfa_setup.html"
+    form_class = MFAClientSetupForm
+    model = Secret
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse("secret:mfa", kwargs=dict(pk=self.object.pk))
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["mfa_string"] = self.object.mfa_string
+
+        return initial
+
+    def form_valid(self, form):
+        self.object.mfa_string = form.cleaned_data["mfa_string"]
+        self.object.save()
+
+        create_audit_event(self.request.user, Actions.setup_mfa, secret=self.object)
+        messages.info(self.request, "MFA client successfully set-up")
+
+        http_response = super().form_valid(form)
+        return http_response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tab"] = "mfa"
+
+        return context
+
+
+@method_decorator(otp_required, name="dispatch")
+@method_decorator(
+    permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")), name="dispatch",
+)
+class SecretMFAView(SingleObjectMixin, TemplateView):
+    template_name = "secret/mfa.html"
+    model = Secret
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tab"] = "mfa"
+
+        create_audit_event(
+            self.request.user,
+            Actions.generate_mfa_token,
+            secret=context["object"],
+            report_once=True,
+        )
+
+        return context
+
+
+@method_decorator(otp_required, name="dispatch")
+@method_decorator(
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="dispatch",
+)
+class SecretMFADeleteView(DeleteView):
+    model = Secret
+    template_name = "secret/mfa_delete.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["tab"] = "mfa"
+
+        return context
+
+    def get_success_url(self):
+        return reverse("secret:mfa", kwargs=dict(pk=self.object.pk))
+
+    def delete(self, request, *args, **kwargs):
+        self.object.mfa_string = ""
+        self.object.save()
+
+        create_audit_event(self.request.user, Actions.delete_mfa, secret=self.object)
+        messages.info(request, "MFA client removed")
+
+        return redirect(self.get_success_url())

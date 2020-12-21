@@ -13,8 +13,6 @@ class User(AbstractBaseUser, PermissionsMixin, GuardianUserMixin):
 
     created = models.DateTimeField(_("created"), auto_now_add=True,)
 
-    last_accessed = models.DateTimeField(_("last accessed"), blank=True, null=True,)
-
     email = models.EmailField(_("email"), unique=True,)
 
     first_name = models.CharField(_("first name"), max_length=50, blank=True)

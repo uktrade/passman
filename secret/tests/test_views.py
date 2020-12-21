@@ -1,4 +1,6 @@
 import pytest
+import re
+from urllib.parse import quote_plus
 
 from django.urls import reverse
 from django.utils import timezone
@@ -26,10 +28,13 @@ def login_and_verify_user(client, verify=True, **extra_user_args):
 
 class TestListView:
     def test_auth_required(self, client):
-        response = client.get(reverse("secret:list"))
+        url = reverse("secret:list")
+        response = client.get(url)
 
         assert response.status_code == 302
-        assert response.url == reverse("authbroker_client:login")
+
+        qs = "?next=" + quote_plus(url)
+        assert response.url == reverse("authbroker_client:login") + qs
 
     def test_verification_not_required(self, client):
         login_and_verify_user(client, verify=False)
@@ -42,10 +47,12 @@ class TestListView:
 class TestUpdateView:
     def test_auth_required(self, client):
         secret = SecretFactory()
-        response = client.get(reverse("secret:detail", kwargs={"pk": secret.pk}))
+        url = reverse("secret:detail", kwargs={"pk": secret.pk})
+        response = client.get(url)
 
         assert response.status_code == 302
-        assert response.url == reverse("authbroker_client:login")
+        qs = "?next=" + quote_plus(url)
+        assert response.url == reverse("authbroker_client:login") + qs
 
     def test_superuser_can_view_and_edit_secrets(self, client):
         login_and_verify_user(client, is_superuser=True)
@@ -148,10 +155,13 @@ class TestUpdateView:
 
 class TestCreateVew:
     def test_auth_required(self, client):
-        response = client.get(reverse("secret:create"))
+        url = reverse("secret:create")
+
+        response = client.get(url)
 
         assert response.status_code == 302
-        assert response.url == reverse("authbroker_client:login")
+        qs = "?next=" + quote_plus(url)
+        assert response.url == reverse("authbroker_client:login") + qs
 
     def test_page_load_unverfied(self, client):
         login_and_verify_user(client, verify=False)
@@ -204,11 +214,13 @@ class TestCreateVew:
 class TestSecretPermissionsView:
     def test_page_requires_auth(self, client):
         secret = SecretFactory()
+        url = reverse("secret:permissions", kwargs={"pk": secret.pk})
+        response = client.get(url)
 
-        response = client.get(reverse("secret:permissions", kwargs={"pk": secret.pk}))
+        qs = "?next=" + quote_plus(url)
 
         assert response.status_code == 302
-        assert response.url == reverse("authbroker_client:login")
+        assert response.url == reverse("authbroker_client:login") + qs
 
     def test_page_requires_2fa_verification(self, client):
         secret = SecretFactory()
@@ -324,11 +336,13 @@ class TestSecretPermissionsView:
 class TestSecretPermissionsDeleteView:
     def test_page_requires_auth(self, client):
         secret = SecretFactory()
+        url = reverse("secret:delete-permission", kwargs={"pk": secret.pk})
+        response = client.get(url)
 
-        response = client.get(reverse("secret:delete-permission", kwargs={"pk": secret.pk}))
+        qs = "?next=" + quote_plus(url)
 
         assert response.status_code == 302
-        assert response.url == reverse("authbroker_client:login")
+        assert response.url == reverse("authbroker_client:login") + qs
 
     def test_page_requires_2fa_verification(self, client):
         secret = SecretFactory()
@@ -343,7 +357,8 @@ class TestSecretPermissionsDeleteView:
         user = login_and_verify_user(client)
         secret = SecretFactory()
 
-        response = client.get(reverse("secret:delete-permission", kwargs={"pk": secret.pk}))
+        url = reverse("secret:delete-permission", kwargs={"pk": secret.pk})
+        response = client.get(url)
 
         assert response.status_code == 403
 
@@ -434,10 +449,13 @@ class TestSecretAuditView:
     def test_page_requires_auth(self, client):
         secret = SecretFactory()
 
-        response = client.get(reverse("secret:audit", kwargs={"pk": secret.pk}))
+        url = reverse("secret:audit", kwargs={"pk": secret.pk})
+        response = client.get(url)
+
+        qs = "?next=" + quote_plus(url)
 
         assert response.status_code == 302
-        assert response.url == reverse("authbroker_client:login")
+        assert response.url == reverse("authbroker_client:login") + qs
 
     def test_page_requires_2fa_verification(self, client):
         secret = SecretFactory()
@@ -466,3 +484,196 @@ class TestSecretAuditView:
 
         assert response.status_code == 200
         assert response.template_name == ["secret/secret_audit.html"]
+
+
+class TestMFAClientSetup:
+    def test_page_requires_auth(self, client):
+        secret = SecretFactory()
+
+        url = reverse("secret:mfa_setup", kwargs={"pk": secret.pk})
+        response = client.get(url)
+
+        qs = "?next=" + quote_plus(url)
+
+        assert response.status_code == 302
+        assert response.url == reverse("authbroker_client:login") + qs
+
+    def test_page_requires_2fa_verification(self, client):
+        secret = SecretFactory()
+        login_and_verify_user(client, verify=False)
+
+        response = client.get(reverse("secret:mfa_setup", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_viewing_page_requires_change_permission(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:mfa_setup", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:mfa_setup", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_invalid_code(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        response = client.post(
+            reverse("secret:mfa_setup", kwargs={"pk": secret.pk}),
+            {"mfa_string": "invalid-otp-code"},
+        )
+
+        secret.refresh_from_db()
+        assert response.status_code == 200
+        assert not secret.mfa_string
+
+    def test_setup_success(self, client):
+        mfa_string = "otpauth://totp/Someapp%3Asome@user.com?secret=SNVQHZZUNABGV7DP3M4UI57OH7YZWNFI&algorithm=SHA1&digits=6&period=30&issuer=Someapp"  # noqa
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        response = client.post(
+            reverse("secret:mfa_setup", kwargs={"pk": secret.pk}), {"mfa_string": mfa_string}
+        )
+
+        secret.refresh_from_db()
+        assert response.status_code == 302
+        assert response.url == reverse("secret:mfa", kwargs={"pk": secret.pk})
+        assert secret.mfa_string == mfa_string
+
+
+class TestMFAClient:
+    def test_page_requires_auth(self, client):
+        secret = SecretFactory()
+
+        url = reverse("secret:mfa_setup", kwargs={"pk": secret.pk})
+        response = client.get(url)
+
+        qs = "?next=" + quote_plus(url)
+
+        assert response.status_code == 302
+        assert response.url == reverse("authbroker_client:login") + qs
+
+    def test_page_requires_2fa_verification(self, client):
+        secret = SecretFactory()
+        login_and_verify_user(client, verify=False)
+
+        response = client.get(reverse("secret:mfa_setup", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_page_requires_view_permission(self, client):
+        login_and_verify_user(client)
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:mfa_setup", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_shows_setup_link_if_no_mfa_configured(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory()
+
+        assign_perm("view_secret", user, secret)
+        assign_perm("change_secret", user, secret)
+
+        response = client.get(reverse("secret:mfa", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 200
+
+        link_html = '<a class="btn btn-danger" href="{}" role="button">Setup MFA client</a>'.format(
+            reverse("secret:mfa_setup", kwargs={"pk": secret.pk})
+        )
+
+        assert link_html in response.content.decode("utf-8")
+
+    def test_generate_token(self, client):
+        mfa_string = "otpauth://totp/someapp%3Asome@email.com?secret=SNVQHZZUNABGV7DP3M4UI57OH7YZWNFI&algorithm=SHA1&digits=6&period=30&issuer=someapp"  # noqa
+
+        user = login_and_verify_user(client)
+        secret = SecretFactory(mfa_string=mfa_string)
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:mfa", kwargs={"pk": secret.pk}))
+        content = response.content.decode("utf-8")
+
+        assert response.status_code == 200
+        code = int(re.search(r"\>(\d{6})\<", content).groups()[0])
+
+        assert secret.verify_otp(code)
+
+    def test_audit(self, client):
+        mfa_string = "otpauth://totp/someapp%3Asome@email.com?secret=SNVQHZZUNABGV7DP3M4UI57OH7YZWNFI&algorithm=SHA1&digits=6&period=30&issuer=someapp"  # noqa
+
+        user = login_and_verify_user(client)
+        secret = SecretFactory(mfa_string=mfa_string)
+
+        assign_perm("view_secret", user, secret)
+
+        assert Audit.objects.count() == 0
+
+
+class TestMFAClientDelete:
+    def test_page_requires_auth(self, client):
+        secret = SecretFactory()
+
+        url = reverse("secret:mfa_setup", kwargs={"pk": secret.pk})
+        response = client.get(url)
+
+        qs = "?next=" + quote_plus(url)
+
+        assert response.status_code == 302
+        assert response.url == reverse("authbroker_client:login") + qs
+
+    def test_page_requires_2fa_verification(self, client):
+        secret = SecretFactory()
+        login_and_verify_user(client, verify=False)
+
+        response = client.get(reverse("secret:mfa_setup", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_page_requires_change_permission(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:mfa_delete", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:mfa_delete", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_success(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        secret.mfa_string = "test-string"
+        secret.save()
+
+        assign_perm("change_secret", user, secret)
+
+        response = client.post(reverse("secret:mfa_delete", kwargs={"pk": secret.pk}))
+
+        secret.refresh_from_db()
+        assert response.status_code == 302
+        assert response.url == reverse("secret:mfa", kwargs={"pk": secret.pk})
+        assert not secret.mfa_string

@@ -12,7 +12,7 @@ def test_unauthenticated_user_is_redirected_to_sso(client):
     response = client.get(reverse("admin:index"))
 
     assert response.status_code == 302
-    assert response.url == reverse("authbroker_client:login")
+    assert response.url == reverse("authbroker_client:login") + "?next=%2Fadmin%2F"
 
 
 def test_authenticated_but_unverified_user_is_redirected_to_login(client):
