@@ -4,88 +4,238 @@
 #
 #    pip-compile --output-file=requirements-dev.txt requirements-dev.in
 #
-appdirs==1.4.4            # via black, virtualenv
-asgiref==3.2.10           # via -r requirements.txt, django
-attrs==19.3.0             # via black, pytest
-black==19.10b0            # via -r requirements-dev.in
-certifi==2020.6.20        # via -r requirements.txt, requests, sentry-sdk
-cffi==1.14.0              # via -r requirements.txt, cryptography
-cfgv==3.2.0               # via pre-commit
-chardet==3.0.4            # via -r requirements.txt, requests
-click==7.1.2              # via black
-codecov==2.1.8            # via -r requirements-dev.in
-coverage==5.2             # via codecov, pytest-cov
-cryptography==3.0         # via -r requirements.txt, django-cryptography
-distlib==0.3.1            # via virtualenv
-dj-database-url==0.5.0    # via -r requirements.txt
-django-appconf==1.0.4     # via -r requirements.txt, django-cryptography
-django-crispy-forms==1.9.2  # via -r requirements.txt
-django-cryptography==1.0  # via -r requirements.txt
-django-environ==0.4.5     # via -r requirements.txt
-django-filter==2.3.0      # via -r requirements.txt
-django-guardian==2.3.0    # via -r requirements.txt
-django-otp==0.9.3         # via -r requirements.txt
-django-staff-sso-client==3.0.0  # via -r requirements.txt
-django==3.0.8             # via -r requirements.txt, django-appconf, django-filter, django-guardian, django-otp, django-staff-sso-client
-factory-boy==2.12.0       # via -r requirements-dev.in
-faker==4.1.1              # via factory-boy
-filelock==3.0.12          # via virtualenv
-flake8-blind-except==0.1.1  # via -r requirements-dev.in
-flake8-debugger==3.2.1    # via -r requirements-dev.in
-flake8-mutable==1.2.0     # via -r requirements-dev.in
-flake8-print==3.1.4       # via -r requirements-dev.in
-flake8==3.8.3             # via -r requirements-dev.in, flake8-debugger, flake8-mutable, flake8-print
-freezegun==0.3.15         # via -r requirements-dev.in, pytest-freezegun
-gunicorn==20.0.4          # via -r requirements.txt
-identify==1.4.25          # via pre-commit
-idna==2.10                # via -r requirements.txt, requests
-importlib-metadata==1.7.0  # via flake8, pluggy, pre-commit, pytest, virtualenv
-isort==4.3.21             # via -r requirements-dev.in
-lxml==4.5.2               # via -r requirements-dev.in
-mccabe==0.6.1             # via flake8
-mohawk==1.1.0             # via -r requirements-dev.in
-more-itertools==8.4.0     # via pytest
-nodeenv==1.4.0            # via pre-commit
-oauthlib==3.1.0           # via -r requirements.txt, requests-oauthlib
-packaging==20.4           # via pytest
-pathspec==0.8.0           # via black
-pillow==7.2.0             # via -r requirements.txt
-pluggy==0.13.1            # via pytest
-pre-commit==2.6.0         # via -r requirements-dev.in
-psycopg2==2.8.5           # via -r requirements.txt
-py==1.9.0                 # via pytest
-pycodestyle==2.6.0        # via flake8, flake8-debugger, flake8-print
-pycparser==2.20           # via -r requirements.txt, cffi
-pyflakes==2.2.0           # via flake8
-pyotp==2.4.0              # via -r requirements.txt
-pyparsing==2.4.7          # via packaging
-pytest-cov==2.10.0        # via -r requirements-dev.in
-pytest-django==3.9.0      # via -r requirements-dev.in
-pytest-env==0.6.2         # via -r requirements-dev.in
-pytest-freezegun==0.4.2   # via -r requirements-dev.in
-pytest-mock==3.2.0        # via -r requirements-dev.in
-pytest-sugar==0.9.1       # via -r requirements-dev.in
-pytest==5.4.3             # via -r requirements-dev.in, pytest-cov, pytest-django, pytest-env, pytest-freezegun, pytest-mock, pytest-sugar
-python-dateutil==2.8.1    # via faker, freezegun
-pytz==2020.1              # via -r requirements.txt, django
-pyyaml==5.3.1             # via pre-commit
-pyzbar==0.1.8             # via -r requirements.txt
-qrcode==6.1               # via -r requirements.txt
-regex==2020.7.14          # via black
-requests-oauthlib==1.3.0  # via -r requirements.txt, django-staff-sso-client
-requests==2.24.0          # via -r requirements.txt, codecov, requests-oauthlib
-sentry-sdk==0.16.1        # via -r requirements.txt
-six==1.15.0               # via -r requirements.txt, cryptography, flake8-print, freezegun, mohawk, packaging, python-dateutil, qrcode, virtualenv
-sqlparse==0.3.1           # via -r requirements.txt, django
-termcolor==1.1.0          # via pytest-sugar
-text-unidecode==1.3       # via faker
-toml==0.10.1              # via black, pre-commit
-typed-ast==1.4.1          # via black
-urllib3==1.25.9           # via -r requirements.txt, requests, sentry-sdk
-virtualenv==20.0.28       # via pre-commit
-wcwidth==0.2.5            # via pytest
-whitenoise==5.1.0         # via -r requirements.txt
-zipp==3.1.0               # via importlib-metadata
+appdirs==1.4.4
+    # via
+    #   black
+    #   virtualenv
+asgiref==3.2.10
+    # via
+    #   -r requirements.txt
+    #   django
+attrs==19.3.0
+    # via
+    #   black
+    #   pytest
+black==19.10b0
+    # via -r requirements-dev.in
+certifi==2020.6.20
+    # via
+    #   -r requirements.txt
+    #   requests
+    #   sentry-sdk
+cffi==1.14.0
+    # via
+    #   -r requirements.txt
+    #   cryptography
+cfgv==3.2.0
+    # via pre-commit
+chardet==3.0.4
+    # via
+    #   -r requirements.txt
+    #   requests
+click==7.1.2
+    # via black
+codecov==2.1.8
+    # via -r requirements-dev.in
+coverage==5.2
+    # via
+    #   codecov
+    #   pytest-cov
+cryptography==3.0
+    # via
+    #   -r requirements.txt
+    #   django-cryptography
+distlib==0.3.1
+    # via virtualenv
+dj-database-url==0.5.0
+    # via -r requirements.txt
+django-appconf==1.0.4
+    # via
+    #   -r requirements.txt
+    #   django-cryptography
+django-crispy-forms==1.9.2
+    # via -r requirements.txt
+django-cryptography==1.0
+    # via -r requirements.txt
+django-environ==0.4.5
+    # via -r requirements.txt
+django-filter==2.3.0
+    # via -r requirements.txt
+django-guardian==2.3.0
+    # via -r requirements.txt
+django-otp==0.9.3
+    # via -r requirements.txt
+django-staff-sso-client==3.0.0
+    # via -r requirements.txt
+django==3.0.8
+    # via
+    #   -r requirements.txt
+    #   django-appconf
+    #   django-filter
+    #   django-guardian
+    #   django-otp
+    #   django-staff-sso-client
+factory-boy==2.12.0
+    # via -r requirements-dev.in
+faker==4.1.1
+    # via factory-boy
+filelock==3.0.12
+    # via virtualenv
+flake8-blind-except==0.1.1
+    # via -r requirements-dev.in
+flake8-debugger==3.2.1
+    # via -r requirements-dev.in
+flake8-mutable==1.2.0
+    # via -r requirements-dev.in
+flake8-print==3.1.4
+    # via -r requirements-dev.in
+flake8==3.8.3
+    # via
+    #   -r requirements-dev.in
+    #   flake8-debugger
+    #   flake8-mutable
+    #   flake8-print
+freezegun==0.3.15
+    # via
+    #   -r requirements-dev.in
+    #   pytest-freezegun
+gunicorn==20.0.4
+    # via -r requirements.txt
+identify==1.4.25
+    # via pre-commit
+idna==2.10
+    # via
+    #   -r requirements.txt
+    #   requests
+isort==4.3.21
+    # via -r requirements-dev.in
+lxml==4.6.2
+    # via -r requirements-dev.in
+mccabe==0.6.1
+    # via flake8
+mohawk==1.1.0
+    # via -r requirements-dev.in
+more-itertools==8.4.0
+    # via pytest
+nodeenv==1.4.0
+    # via pre-commit
+oauthlib==3.1.0
+    # via
+    #   -r requirements.txt
+    #   requests-oauthlib
+packaging==20.4
+    # via pytest
+pathspec==0.8.0
+    # via black
+pillow==7.2.0
+    # via -r requirements.txt
+pluggy==0.13.1
+    # via pytest
+pre-commit==2.6.0
+    # via -r requirements-dev.in
+psycopg2==2.8.5
+    # via -r requirements.txt
+py==1.9.0
+    # via pytest
+pycodestyle==2.6.0
+    # via
+    #   flake8
+    #   flake8-debugger
+    #   flake8-print
+pycparser==2.20
+    # via
+    #   -r requirements.txt
+    #   cffi
+pyflakes==2.2.0
+    # via flake8
+pyotp==2.4.0
+    # via -r requirements.txt
+pyparsing==2.4.7
+    # via packaging
+pytest-cov==2.10.0
+    # via -r requirements-dev.in
+pytest-django==3.9.0
+    # via -r requirements-dev.in
+pytest-env==0.6.2
+    # via -r requirements-dev.in
+pytest-freezegun==0.4.2
+    # via -r requirements-dev.in
+pytest-mock==3.2.0
+    # via -r requirements-dev.in
+pytest-sugar==0.9.1
+    # via -r requirements-dev.in
+pytest==5.4.3
+    # via
+    #   -r requirements-dev.in
+    #   pytest-cov
+    #   pytest-django
+    #   pytest-env
+    #   pytest-freezegun
+    #   pytest-mock
+    #   pytest-sugar
+python-dateutil==2.8.1
+    # via
+    #   faker
+    #   freezegun
+pytz==2020.1
+    # via
+    #   -r requirements.txt
+    #   django
+pyyaml==5.3.1
+    # via pre-commit
+pyzbar==0.1.8
+    # via -r requirements.txt
+qrcode==6.1
+    # via -r requirements.txt
+regex==2020.7.14
+    # via black
+requests-oauthlib==1.3.0
+    # via
+    #   -r requirements.txt
+    #   django-staff-sso-client
+requests==2.24.0
+    # via
+    #   -r requirements.txt
+    #   codecov
+    #   requests-oauthlib
+sentry-sdk==0.16.1
+    # via -r requirements.txt
+six==1.15.0
+    # via
+    #   -r requirements.txt
+    #   cryptography
+    #   flake8-print
+    #   freezegun
+    #   mohawk
+    #   packaging
+    #   python-dateutil
+    #   qrcode
+    #   virtualenv
+sqlparse==0.3.1
+    # via
+    #   -r requirements.txt
+    #   django
+termcolor==1.1.0
+    # via pytest-sugar
+text-unidecode==1.3
+    # via faker
+toml==0.10.1
+    # via
+    #   black
+    #   pre-commit
+typed-ast==1.4.1
+    # via black
+urllib3==1.25.9
+    # via
+    #   -r requirements.txt
+    #   requests
+    #   sentry-sdk
+virtualenv==20.0.28
+    # via pre-commit
+wcwidth==0.2.5
+    # via pytest
+whitenoise==5.1.0
+    # via -r requirements.txt
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
