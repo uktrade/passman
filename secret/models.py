@@ -13,6 +13,8 @@ from guardian.shortcuts import (
     remove_perm,
 )
 
+import pyotp
+
 from user.models import User
 
 
@@ -30,6 +32,13 @@ class Secret(models.Model):
     username = models.CharField(max_length=255, blank=True)
     password = encrypt(models.CharField(max_length=255, blank=True))
     details = encrypt(models.TextField(blank=True))
+
+    mfa_string = encrypt(models.CharField(max_length=255, blank=True))
+
+    @property
+    def mfa_code(self):
+        if hasattr(self, "mfaclient"):
+            return self.mfaclient.generate_code() if self.mfaclient else None
 
     class Meta:
         ordering = ("name",)
@@ -64,6 +73,26 @@ class Secret(models.Model):
 
         for perm in permissions:
             remove_perm(perm, target, self)
+
+    def get_otp(self):
+        if not self.mfa_string:
+            return None
+
+        otp = pyotp.parse_uri(self.mfa_string)
+
+        # the library fails to cast the interval field to a number,
+        # despite requiring that the field be a number
+        otp.interval = int(otp.interval)
+
+        return otp
+
+    def verify_otp(self, code):
+        return self.get_otp().verify(code)
+
+    def generate_otp_code(self):
+        otp = self.get_otp()
+
+        return None if not otp else otp.now()
 
 
 class SecretUserObjectPermission(UserObjectPermissionBase):

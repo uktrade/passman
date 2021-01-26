@@ -3,13 +3,16 @@ sentry-sdk
 django-environ
 dj-database-url
 psycopg2
-git+https://github.com/uktrade/django-staff-sso-client.git@add_email_id_support#egg=django-staff-sso-client
+django-staff-sso-client
 django-crispy-forms
 django-filter
 django-cryptography
 django-guardian
 django-otp
 qrcode
+pillow
+pyzbar
+pyotp
 
 whitenoise
 gunicorn

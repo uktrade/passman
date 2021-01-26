@@ -14,6 +14,9 @@ class Actions(StrEnum):
     view_secret = "Viewed"
     add_permission = "Added permission"
     remove_permission = "Removed permission"
+    setup_mfa = "Set up MFA client"
+    delete_mfa = "Delete MFA client"
+    generate_mfa_token = "Generate MFA token"
 
 
 class Audit(models.Model):
@@ -48,5 +51,8 @@ def create_audit_event(user, action: Actions, description=None, secret=None, rep
             return
 
     Audit.objects.create(
-        user=user, action=action.name, description=description or "", secret=secret,
+        user=user,
+        action=action.name,
+        description=description or "",
+        secret=secret,
     )

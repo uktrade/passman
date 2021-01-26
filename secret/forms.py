@@ -3,6 +3,10 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 
+from PIL import Image
+import pyotp
+from pyzbar import pyzbar
+
 from crispy_forms.bootstrap import PrependedAppendedText, AppendedText, FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Field, Layout, Row, Submit
@@ -74,26 +78,6 @@ class SecretCreateForm(SecretUpdateForm):
         self.helper.layout[-1] = FormActions(Submit("save", "Create secret"),)
 
 
-# class SecretPermissionsDeleteForm(forms.Form):
-#     user = forms.ModelChoiceField(
-#         queryset=get_user_model().objects.all().exclude(email="AnonymousUser"),
-#         required=False,
-#         widget=forms.HiddenInput(),
-#     )
-#     group = forms.ModelChoiceField(
-#         queryset=Group.objects.all().order_by("name"), required=False, widget=forms.HiddenInput(),
-#     )
-#     permission = forms.ChoiceField(choices=PERMISSION_CHOICES, widget=forms.HiddenInput(),)
-#
-#     def clean(self):
-#         cleaned_data = super().clean()
-#
-#         if not cleaned_data["user"] and not cleaned_data["group"]:
-#             raise forms.ValidationError("Select either a user or a group")
-#
-#         return cleaned_data
-
-
 class SecretPermissionsForm(forms.Form):
     user = forms.ModelChoiceField(
         queryset=get_user_model().objects.all().exclude(email="AnonymousUser"),
@@ -156,3 +140,67 @@ class SecretUserPermissionsForm(forms.Form):
             Row(Column("user"), Column("permission"), css_class="form-row"),
             FormActions(Submit("add", "Add"),),
         )
+
+
+class MFAClientSetupForm(forms.Form):
+    qr_code = forms.ImageField(
+        label="QR Code",
+        required=False,
+        help_text="Screen shot and upload an image of the MFA QR code",
+    )
+    mfa_string = forms.CharField(
+        label="MFA String",
+        max_length=255,
+        required=False,
+        help_text="Or, manually enter the MFA string",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Field("qr_code"), Field("mfa_string"), FormActions(Submit("Enable", "Enable"),),
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if cleaned_data["qr_code"] and not cleaned_data["mfa_string"]:
+            raise forms.ValidationError(
+                "Either upload an screenshot of an QR code OR enter "
+                "the MFA code string manually; only one field is required."
+            )
+
+        if cleaned_data["qr_code"]:
+            decoded = self.extract_code_from_qr_image(cleaned_data["qr_code"])
+
+            if not decoded:
+                raise form.ValidationError("Invalid QR code")
+
+            if self.is_valid_otp_string(decoded):
+                cleaned_data["mfa_string"] = decoded
+                return cleaned_data
+
+        if cleaned_data["mfa_string"]:
+            if self.is_valid_otp_string(cleaned_data["mfa_string"]):
+                return cleaned_data
+
+        raise forms.ValidationError("Unable to validate QR code")
+
+    def is_valid_otp_string(self, mfa_string):
+        try:
+            pyotp.parse_uri(mfa_string)
+            return True
+        except ValueError:
+            return False
+
+    def extract_code_from_qr_image(self, image_field):
+        image = Image.open(image_field)
+        decoded = pyzbar.decode(image)
+
+        if len(decoded):
+            if decoded[0].type == "QRCODE":
+                return decoded[0].data.decode("utf-8")
+
+        return None

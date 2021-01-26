@@ -10,14 +10,16 @@ def get_redirect_url(request):
     """Return the user-originating redirect URL if it's safe."""
     redirect_to = request.POST.get(REDIRECT_FIELD_NAME, request.GET.get(REDIRECT_FIELD_NAME, ""))
     url_is_safe = url_has_allowed_host_and_scheme(
-        url=redirect_to, allowed_hosts=request.get_host(), require_https=request.is_secure(),
+        url=redirect_to,
+        allowed_hosts=request.get_host(),
+        require_https=request.is_secure(),
     )
     return redirect_to if url_is_safe else ""
 
 
 def admin_login_view(request):
     """A replacement admin login view that will direct the user through the SSO
-    authentication flow. """
+    authentication flow."""
 
     next_url = get_redirect_url(request) or reverse("admin:index")
 

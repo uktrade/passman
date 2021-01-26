@@ -5,9 +5,25 @@ from django.urls import resolve, reverse
 from django_otp import user_has_device
 
 
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from urllib.parse import urlparse, urlencode
+
+
 class ProtectAllViewsMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
+
+    def get_auth_redirect_url(self, request):
+
+        next_url = urlencode(
+            {
+                REDIRECT_FIELD_NAME: request.path,
+            }
+        )
+
+        redirect_url = reverse("authbroker_client:login")
+
+        return redirect(f"{redirect_url}?{next_url}")
 
     def __call__(self, request):
         public_views = getattr(settings, "PUBLIC_VIEWS", [])
@@ -19,7 +35,7 @@ class ProtectAllViewsMiddleware:
                 resolve(request.path).app_name != "authbroker_client"
                 and request.path not in public_views
             ):
-                return redirect("authbroker_client:login")
+                return self.get_auth_redirect_url(request)
         else:
             # user is not enrolled for 2fa
             if (

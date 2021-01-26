@@ -12,7 +12,7 @@ class TestTwoFactorEnrollView:
         response = client.get(reverse("twofactor:enroll"))
 
         assert response.status_code == 302
-        assert response.url == reverse("authbroker_client:login")
+        assert response.url == reverse("authbroker_client:login") + "?next=%2F2fa%2Fenroll%2F"
 
     def test_load_page_creates_unconfirmed_totp_device(self, client):
         user = UserFactory(is_active=True)
@@ -76,7 +76,7 @@ class TestTwoFactorVerifyView:
         response = client.get(reverse("twofactor:enroll"))
 
         assert response.status_code == 302
-        assert response.url == reverse("authbroker_client:login")
+        assert response.url == reverse("authbroker_client:login") + "?next=%2F2fa%2Fenroll%2F"
 
     def test_requires_confirmed_device(self, client):
         user = UserFactory(is_active=True)
@@ -127,7 +127,11 @@ class TestTwoFactorVerifyView:
 
     @pytest.mark.parametrize(
         "next_url, expected",
-        [("http://unsafe", "/"), ("http://also-unsafe", "/"), ("/hello-world/", "/hello-world/"),],
+        [
+            ("http://unsafe", "/"),
+            ("http://also-unsafe", "/"),
+            ("/hello-world/", "/hello-world/"),
+        ],
     )
     def test_next_url_on_post(self, next_url, expected, client, mocker):
         user = UserFactory(is_active=True, two_factor_enabled=True)
