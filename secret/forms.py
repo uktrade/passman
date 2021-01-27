@@ -57,7 +57,9 @@ class SecretUpdateForm(forms.ModelForm):
                 css_class="form-row",
             ),
             "details",
-            FormActions(Submit("save", "Update secret"),),
+            FormActions(
+                Submit("save", "Update secret"),
+            ),
         )
 
     class Meta:
@@ -75,7 +77,9 @@ class SecretCreateForm(SecretUpdateForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.helper.layout[-1] = FormActions(Submit("save", "Create secret"),)
+        self.helper.layout[-1] = FormActions(
+            Submit("save", "Create secret"),
+        )
 
 
 class SecretPermissionsForm(forms.Form):
@@ -85,9 +89,14 @@ class SecretPermissionsForm(forms.Form):
         widget=forms.HiddenInput(),
     )
     group = forms.ModelChoiceField(
-        queryset=Group.objects.all().order_by("name"), required=False, widget=forms.HiddenInput(),
+        queryset=Group.objects.all().order_by("name"),
+        required=False,
+        widget=forms.HiddenInput(),
     )
-    permission = forms.ChoiceField(choices=PERMISSION_CHOICES, widget=forms.HiddenInput(),)
+    permission = forms.ChoiceField(
+        choices=PERMISSION_CHOICES,
+        widget=forms.HiddenInput(),
+    )
 
     def __init__(self, *args, update_permission=False, **kwargs):
         super().__init__(*args, **kwargs)
@@ -100,7 +109,9 @@ class SecretPermissionsForm(forms.Form):
             self.helper.form_class = "update_perms"
             self.helper.form_show_labels = False
             self.helper.layout = Layout(
-                "user", "group", Field("permission", css_class="form-control-sm"),
+                "user",
+                "group",
+                Field("permission", css_class="form-control-sm"),
             )
 
     def clean(self):
@@ -122,7 +133,9 @@ class SecretGroupPermissionsForm(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(Column("group"), Column("permission"), css_class="form-row"),
-            FormActions(Submit("add", "Add"),),
+            FormActions(
+                Submit("add", "Add"),
+            ),
         )
 
 
@@ -138,7 +151,9 @@ class SecretUserPermissionsForm(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(Column("user"), Column("permission"), css_class="form-row"),
-            FormActions(Submit("add", "Add"),),
+            FormActions(
+                Submit("add", "Add"),
+            ),
         )
 
 
@@ -160,13 +175,17 @@ class MFAClientSetupForm(forms.Form):
 
         self.helper = FormHelper()
         self.helper.layout = Layout(
-            Field("qr_code"), Field("mfa_string"), FormActions(Submit("Enable", "Enable"),),
+            Field("qr_code"),
+            Field("mfa_string"),
+            FormActions(
+                Submit("Enable", "Enable"),
+            ),
         )
 
     def clean(self):
         cleaned_data = super().clean()
 
-        if cleaned_data["qr_code"] and not cleaned_data["mfa_string"]:
+        if not cleaned_data["qr_code"] and not cleaned_data["mfa_string"]:
             raise forms.ValidationError(
                 "Either upload an screenshot of an QR code OR enter "
                 "the MFA code string manually; only one field is required."

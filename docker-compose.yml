@@ -1,6 +1,7 @@
 version: '3'
 
 volumes:
+  # We'll define a volume that will store the data from the postgres databases:
   passman-data:
     driver: local
 
@@ -9,13 +10,14 @@ services:
     image: "postgres:10"
     restart: always
     environment:
-      - POSTGRESS_PASSWORD=password
+      - POSTGRESS_PASSWORD=does-it-really-matter
       - POSTGRES_USER=postgres
-      - POSTGRES_DB=secrets
+      - POSTGRES_DB=passman
     volumes:
      - passman-data:/var/lib/postgresql/data
     ports:
      - 5432:5432
+
   web:
     build: .
     stdin_open: true
@@ -23,12 +25,14 @@ services:
     env_file:
       - .env
     environment:
+      - DATABASE_URL=postgres://postgres@db/passman
+    environment:
       - PYTHONUNBUFFERED=0
       - PORT=8000
-      - DATABASE_URL=postgres://postgres:password@db:5432/secrets
     volumes:
       - .:/app
     ports:
       - 8000:8000
     depends_on:
       - db
+    command: python3 /app/manage.py runserver 0.0.0.0:8000
