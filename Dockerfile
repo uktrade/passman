@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -qq build-essential \
                                           libssl-dev \
                                           git \
                                           postgresql-client
+                                          libzbar-dev
 
 WORKDIR /app
 
