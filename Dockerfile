@@ -8,8 +8,9 @@ RUN apt-get update && apt-get install -qq build-essential \
                                           libffi-dev \
                                           libssl-dev \
                                           git \
-                                          postgresql-client
-                                          libzbar-dev
+                                          postgresql-client \
+                                          libzbar-dev \
+                                          libzbar0 
 
 WORKDIR /app
 
