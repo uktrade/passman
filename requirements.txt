@@ -34,7 +34,7 @@ django-otp==1.0.2
     # via -r requirements.in
 django-staff-sso-client==3.1.0
     # via -r requirements.in
-django==3.1.5
+django==3.1.6
     # via
     #   -r requirements.in
     #   django-appconf
