@@ -14,8 +14,10 @@ cffi==1.14.4
     # via cryptography
 chardet==4.0.0
     # via requests
-cryptography==3.3.1
-    # via django-cryptography
+cryptography==3.4.6
+    # via
+    #   -r requirements.in
+    #   django-cryptography
 dj-database-url==0.5.0
     # via -r requirements.in
 django-appconf==1.0.4
@@ -34,7 +36,7 @@ django-otp==1.0.2
     # via -r requirements.in
 django-staff-sso-client==3.1.0
     # via -r requirements.in
-django==3.1.5
+django==3.1.6
     # via
     #   -r requirements.in
     #   django-appconf
@@ -48,7 +50,7 @@ idna==2.10
     # via requests
 oauthlib==3.1.0
     # via requests-oauthlib
-pillow==8.1.0
+pillow==8.1.2
     # via -r requirements.in
 psycopg2==2.8.6
     # via -r requirements.in
@@ -69,9 +71,7 @@ requests==2.25.1
 sentry-sdk==0.19.5
     # via -r requirements.in
 six==1.15.0
-    # via
-    #   cryptography
-    #   qrcode
+    # via qrcode
 sqlparse==0.4.1
     # via django
 urllib3==1.26.3

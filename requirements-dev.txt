@@ -39,7 +39,7 @@ coverage==5.4
     # via
     #   codecov
     #   pytest-cov
-cryptography==3.3.1
+cryptography==3.4.6
     # via
     #   -r requirements.txt
     #   django-cryptography
@@ -65,7 +65,7 @@ django-otp==1.0.2
     # via -r requirements.txt
 django-staff-sso-client==3.1.0
     # via -r requirements.txt
-django==3.1.5
+django==3.1.6
     # via
     #   -r requirements.txt
     #   django-appconf
@@ -136,7 +136,7 @@ packaging==20.8
     #   pytest-sugar
 pathspec==0.8.1
     # via black
-pillow==8.1.0
+pillow==8.1.2
     # via -r requirements.txt
 pluggy==0.13.1
     # via pytest
@@ -212,7 +212,6 @@ sentry-sdk==0.19.5
 six==1.15.0
     # via
     #   -r requirements.txt
-    #   cryptography
     #   flake8-debugger
     #   flake8-print
     #   mohawk

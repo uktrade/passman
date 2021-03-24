@@ -1,4 +1,4 @@
-django
+django==3.1.6
 sentry-sdk
 django-environ
 dj-database-url
@@ -10,9 +10,12 @@ django-cryptography
 django-guardian
 django-otp
 qrcode
-pillow
+pillow>=8.1.1
 pyzbar
 pyotp
 
 whitenoise
 gunicorn
+
+# pinned transient dependencies
+cryptography>=3.3.2
