@@ -262,7 +262,10 @@ class TestSecretPermissionsView:
 
     @pytest.mark.parametrize(
         "permission, expected",
-        [("change_secret", {"view_secret", "change_secret"}), ("view_secret", {"view_secret"}),],
+        [
+            ("change_secret", {"view_secret", "change_secret"}),
+            ("view_secret", {"view_secret"}),
+        ],
     )
     def test_add_user_permissions(self, permission, expected, client):
 
@@ -284,7 +287,10 @@ class TestSecretPermissionsView:
 
     @pytest.mark.parametrize(
         "permission, expected",
-        [("change_secret", {"view_secret", "change_secret"}), ("view_secret", {"view_secret"}),],
+        [
+            ("change_secret", {"view_secret", "change_secret"}),
+            ("view_secret", {"view_secret"}),
+        ],
     )
     def test_add_group_permissions(self, permission, expected, client):
         secret = SecretFactory()
@@ -297,7 +303,8 @@ class TestSecretPermissionsView:
         assign_perm("change_secret", user, secret)
 
         response = client.post(
-            permission_url, {"group": target_group.id, "permission": permission},
+            permission_url,
+            {"group": target_group.id, "permission": permission},
         )
 
         assert response.status_code == 302
@@ -317,7 +324,8 @@ class TestSecretPermissionsView:
 
         assert Audit.objects.count() == 0
         response = client.post(
-            permission_url, {"user": target_user.id, "permission": "change_secret"},
+            permission_url,
+            {"user": target_user.id, "permission": "change_secret"},
         )
 
         assert response.status_code == 302
@@ -392,7 +400,8 @@ class TestSecretPermissionsDeleteView:
         assign_perm("view_secret", target_user, secret)
 
         response = client.post(
-            reverse("secret:delete-permission", kwargs={"pk": secret.pk}), {"user": target_user.id},
+            reverse("secret:delete-permission", kwargs={"pk": secret.pk}),
+            {"user": target_user.id},
         )
 
         assert response.status_code == 302
@@ -601,6 +610,7 @@ class TestMFAClient:
         assert link_html in response.content.decode("utf-8")
 
     def test_generate_token(self, client):
+
         mfa_string = "otpauth://totp/someapp%3Asome@email.com?secret=SNVQHZZUNABGV7DP3M4UI57OH7YZWNFI&algorithm=SHA1&digits=6&period=30&issuer=someapp"  # noqa
 
         user = login_and_verify_user(client)
@@ -612,7 +622,7 @@ class TestMFAClient:
         content = response.content.decode("utf-8")
 
         assert response.status_code == 200
-        code = int(re.search(r"\>(\d{6})\<", content).groups()[0])
+        code = re.search(r"\>(\d{6})\<", content).groups()[0]
 
         assert secret.verify_otp(code)
 
