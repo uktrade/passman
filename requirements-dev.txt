@@ -116,8 +116,10 @@ iniconfig==1.1.1
     # via pytest
 isort==5.7.0
     # via -r requirements-dev.in
-lxml==4.6.2
-    # via -r requirements-dev.in
+lxml==4.6.3
+    # via
+    #   -r requirements-dev.in
+    #   -r requirements.txt
 mccabe==0.6.1
     # via flake8
 mohawk==1.1.0
