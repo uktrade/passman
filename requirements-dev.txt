@@ -105,13 +105,6 @@ idna==2.10
     # via
     #   -r requirements.txt
     #   requests
-importlib-metadata==3.4.0
-    # via
-    #   flake8
-    #   pluggy
-    #   pre-commit
-    #   pytest
-    #   virtualenv
 iniconfig==1.1.1
     # via pytest
 isort==5.7.0
@@ -138,7 +131,7 @@ packaging==20.8
     #   pytest-sugar
 pathspec==0.8.1
     # via black
-pillow==8.1.2
+pillow==8.2.0
     # via -r requirements.txt
 pluggy==0.13.1
     # via pytest
@@ -236,9 +229,7 @@ toml==0.10.2
 typed-ast==1.4.2
     # via black
 typing-extensions==3.7.4.3
-    # via
-    #   black
-    #   importlib-metadata
+    # via black
 urllib3==1.26.3
     # via
     #   -r requirements.txt
@@ -248,8 +239,6 @@ virtualenv==20.4.0
     # via pre-commit
 whitenoise==5.2.0
     # via -r requirements.txt
-zipp==3.4.0
-    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
