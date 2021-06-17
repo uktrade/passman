@@ -10,7 +10,7 @@ django-cryptography
 django-guardian
 django-otp
 qrcode
-pillow>=8.1.1
+pillow>=8.2.0
 pyzbar
 pyotp
 
