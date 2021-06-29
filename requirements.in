@@ -1,4 +1,4 @@
-django==3.1.6
+django==3.1.12
 sentry-sdk
 django-environ
 dj-database-url
