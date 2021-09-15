@@ -213,7 +213,7 @@ six==1.15.0
     #   python-dateutil
     #   qrcode
     #   virtualenv
-sqlparse==0.4.1
+sqlparse==0.4.2
     # via
     #   -r requirements.txt
     #   django
