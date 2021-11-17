@@ -43,6 +43,16 @@ class TestListView:
 
         assert response.status_code == 200
 
+    def test_deleted_are_not_visible(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory(deleted=True, name="INVISIBLE")
+
+        response = client.get(reverse("secret:list"))
+
+        assert response.status_code == 200
+        assert secret.name not in response.content.decode("utf-8")
+
 
 class TestUpdateView:
     def test_auth_required(self, client):
@@ -151,6 +161,72 @@ class TestUpdateView:
         assert audit.timestamp == timezone.now()
         assert audit.user == user
         assert audit.secret == secret
+
+    def test_deleted_are_not_accessible(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory(deleted=True)
+
+        assign_perm("view_secret", user, secret)
+        assign_perm("change_secret", user, secret)
+
+        response = client.get(reverse("secret:detail", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 404
+
+
+class TestDeleteView:
+    def test_auth_required(self, client):
+        secret = SecretFactory()
+        url = reverse("secret:delete", kwargs={"pk": secret.pk})
+
+        response = client.get(url)
+
+        assert response.status_code == 302
+        qs = "?next=" + quote_plus(url)
+        assert response.url == reverse("authbroker_client:login") + qs
+
+    def test_requires_change_permission(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:delete", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_confirmation_page(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        response = client.get(reverse("secret:delete", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 200
+        assert "secret/secret_confirm_delete.html" in [
+            template.name for template in response.templates
+        ]
+
+    def test_delete_object(self, client):
+        user = login_and_verify_user(client)
+
+        secret = SecretFactory(deleted=False)
+
+        assign_perm("change_secret", user, secret)
+
+        response = client.post(reverse("secret:delete", kwargs={"pk": secret.pk}))
+
+        secret.refresh_from_db()
+
+        assert secret.deleted == True
+        assert secret.audit_set.count() == 1
+        audit = secret.audit_set.first()
+        assert audit.action == "delete_secret"
+        assert audit.user == user
+        assert response.status_code == 302
+        assert response.url == reverse("secret:list")
 
 
 class TestCreateVew:

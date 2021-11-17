@@ -11,6 +11,7 @@ class Actions(StrEnum):
     imported = "Imported"
     create_secret = "Created"
     update_secret = "Updated"
+    delete_secret = "Deleted"
     view_secret = "Viewed"
     add_permission = "Added permission"
     remove_permission = "Removed permission"

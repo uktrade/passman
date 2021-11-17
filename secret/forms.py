@@ -46,17 +46,20 @@ class SecretUpdateForm(forms.ModelForm):
                 css_class="form-row",
             ),
             Row(
-                Column(AppendedText("username", clipboard_html("#id_username"))),
+                Column(
+                    AppendedText("username", clipboard_html("#id_username")), autocomplete="off"
+                ),
                 Column(
                     PrependedAppendedText(
                         "password",
                         showpassword_html("#id_password"),
                         clipboard_html("#id_password"),
-                    )
+                        autocomplete="off",
+                    ),
                 ),
                 css_class="form-row",
             ),
-            "details",
+            Field("details", autocomplete="off"),
             FormActions(
                 Submit("save", "Update secret"),
             ),

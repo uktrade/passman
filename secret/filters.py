@@ -19,7 +19,9 @@ class SecretFilter(django_filters.FilterSet):
             ("username", "username"),
             ("last_updated", "last_updated"),
         ),
-        field_labels={"last_updated": "Last updated",},
+        field_labels={
+            "last_updated": "Last updated",
+        },
     )
 
     def shared_directly(self, queryset, name, value):
@@ -47,15 +49,18 @@ class SecretFilter(django_filters.FilterSet):
 
     @property
     def qs(self):
-        parent = super().qs
+        parent = super().qs.filter(deleted=False)
 
         if self.request.user.is_superuser:
             return parent
         else:
             return get_objects_for_user(
-                self.request.user, ["view_secret", "change_secret"], parent, any_perm=True,
+                self.request.user,
+                ["view_secret", "change_secret"],
+                parent,
+                any_perm=True,
             )
 
     class Meta:
         model = Secret
-        fields = ["name", "username", "url", "last_updated"]
+        fields = ["name", "username", "url", "deleted", "last_updated"]
