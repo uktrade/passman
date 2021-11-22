@@ -13,6 +13,7 @@ qrcode
 pillow>=8.2.0
 pyzbar
 pyotp
+django_log_formatter_ecs
 
 whitenoise
 gunicorn
