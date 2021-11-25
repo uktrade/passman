@@ -1,9 +1,11 @@
 import os
+import sys
 
 from django.contrib.messages import constants as messages
 from django.urls import reverse_lazy
 
 import dj_database_url
+from django_log_formatter_ecs import ECSFormatter
 import environ
 
 import sentry_sdk
@@ -201,3 +203,51 @@ AUDIT_EVENT_REPEAT_AFTER_MINUTES = env.int("AUDIT_EVENT_REPEAT_AFTER_MINUTES", d
 
 SECRET_PAGINATION_ITEMS_PER_PAGE = 20
 SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=86400)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "{asctime} {levelname} {message}",
+            "style": "{",
+        },
+        "ecs_formatter": {
+            "()": ECSFormatter,
+        },
+    },
+    "handlers": {
+        "stdout": {
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+            "formatter": "ecs_formatter",
+        },
+    },
+    "root": {
+        "handlers": ["stdout"],
+        "level": env("LOG_LEVEL_ROOT", default="INFO"),
+    },
+    "loggers": {
+        "django": {
+            "handlers": [
+                "stdout",
+            ],
+            "level": env("LOG_LEVEL_ROOT", default="INFO"),
+            "propagate": True,
+        },
+        "django.server": {
+            "handlers": [
+                "stdout",
+            ],
+            "level": env("LOG_LEVEL_ROOT", default="INFO"),
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": [
+                "stdout",
+            ],
+            "level": env("LOG_LEVEL_ROOT", default="INFO"),
+            "propagate": True,
+        },
+    },
+}

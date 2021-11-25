@@ -40,6 +40,10 @@ django-filter==2.4.0
     # via -r requirements.in
 django-guardian==2.3.0
     # via -r requirements.in
+django-ipware==3.0.7
+    # via django-log-formatter-ecs
+django-log-formatter-ecs==0.0.5
+    # via -r requirements.in
 django-otp==1.0.2
     # via -r requirements.in
 django-staff-sso-client==3.1.0
@@ -48,8 +52,12 @@ gunicorn==20.0.4
     # via -r requirements.in
 idna==2.10
     # via requests
+kubi-ecs-logger==0.1.0
+    # via django-log-formatter-ecs
 lxml==4.6.3
     # via -r requirements.in
+marshmallow==3.6.1
+    # via kubi-ecs-logger
 oauthlib==3.1.0
     # via requests-oauthlib
 pillow==8.3.2
