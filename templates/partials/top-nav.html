@@ -1,14 +1,25 @@
-    <nav class="navbar navbar-dark bg-dark">
+    <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
       <a class="navbar-brand" href="/">Password Manager (rattic 2.0)</a>
 
       {% if request.user.is_authenticated %}
-      <div class="ml-auto">
-          {% if request.user.is_superuser or request.user.is_staff %}
-              <a href="{% url 'admin:index' %}" class="btn btn-danger">Admin section</a>
-          {% endif %}
 
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item px-2">
+          <form method="get" action="{% url 'secret:list' %}" class="form-inline">
+            <input class="form-control" type="text" placeholder="Search" aria-label="Search" id="search" name="name" {% if search_term %}value="{{ search_term }}"{% endif %}>
+            <button type="submit" class="btn btn-primary" name="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
+          </form>
+            </li>
+          {% if request.user.is_superuser or request.user.is_staff %}
+            <li class="nav-item px-2">
+              <a href="{% url 'admin:index' %}" class="btn btn-danger">Admin section</a>
+            </li>
+          {% endif %}
+            <li class="nav-item px-2">
           <a href="/logout/" class="btn {% if request.user.is_verified %}btn-warning{% else %}btn-secondary{% endif %}">{{ request.user.get_full_name }}, logout</a>
-      </div>
+          </li>
+          </ul>
+
       {% endif %}
 
     </nav>
