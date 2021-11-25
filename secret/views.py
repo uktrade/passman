@@ -7,8 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import DeleteView, FormView
 from django.views.generic.base import ContextMixin, TemplateView
 from django.views.generic.detail import DetailView, SingleObjectMixin
-from django.views.generic.edit import CreateView, UpdateView
-from django.urls import reverse
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.urls import reverse, reverse_lazy
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
@@ -55,7 +55,10 @@ class SecretListView(FilterView):
         )
 
         context.update(
-            {"filter_group": filter_group, "search_term": self.filterset.data.get("name", None),}
+            {
+                "filter_group": filter_group,
+                "search_term": self.filterset.data.get("name", None),
+            }
         )
 
         return context
@@ -84,18 +87,55 @@ class SecretCreateView(CreateView):
 @method_decorator(sensitive_post_parameters("password", "details"), name="dispatch")
 @method_decorator(otp_required, name="dispatch")
 @method_decorator(
-    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="post",
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")),
+    name="dispatch",
+)
+class SecretDeleteView(DeleteView):
+    model = Secret
+    success_url = reverse_lazy("secret:list")
+
+    def _delete_secret(self, secret):
+        """
+        Remove any sensitive fields, create audit history, and set the deleted flag to True
+        """
+        create_audit_event(self.request.user, Actions.delete_secret, secret=secret)
+
+        secret.deleted = True
+        secret.password = ""
+        secret.details = "[DELETED]"
+        secret.mfa_string = ""
+        secret.save()
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+
+        self._delete_secret(self.object)
+        messages.info(self.request, "Secret deleted")
+
+        return redirect(success_url)
+
+
+@method_decorator(sensitive_post_parameters("password", "details"), name="dispatch")
+@method_decorator(otp_required, name="dispatch")
+@method_decorator(
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")),
+    name="post",
 )
 @method_decorator(
     permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")), name="get"
 )
 class SecretDetailView(UpdateView):
     model = Secret
+    queryset = Secret.objects.filter(deleted=False)
     form_class = SecretUpdateForm
 
     def get(self, request, *args, **kwargs):
         create_audit_event(
-            self.request.user, Actions.view_secret, secret=self.get_object(), report_once=True,
+            self.request.user,
+            Actions.view_secret,
+            secret=self.get_object(),
+            report_once=True,
         )
         return super().get(request, *args, **kwargs)
 
@@ -117,7 +157,8 @@ class SecretDetailView(UpdateView):
 
 @method_decorator(otp_required, name="dispatch")
 @method_decorator(
-    permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")), name="dispatch",
+    permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")),
+    name="dispatch",
 )
 class SecretAuditView(DetailView):
     template_name = "secret/secret_audit.html"
@@ -139,7 +180,8 @@ class SecretAuditView(DetailView):
 
 @method_decorator(otp_required, name="dispatch")
 @method_decorator(
-    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="post",
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")),
+    name="post",
 )
 @method_decorator(
     permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="get"
@@ -221,7 +263,8 @@ class SecretPermissionsDeleteView(DetailView):
 
 @method_decorator(otp_required, name="dispatch")
 @method_decorator(
-    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="post",
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")),
+    name="post",
 )
 @method_decorator(
     permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")), name="get"
@@ -319,7 +362,8 @@ class SecretPermissionsView(FormView):
 
 @method_decorator(otp_required, name="dispatch")
 @method_decorator(
-    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="dispatch",
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")),
+    name="dispatch",
 )
 class SecretMFASetupView(SingleObjectMixin, FormView):
     template_name = "secret/mfa_setup.html"
@@ -358,7 +402,8 @@ class SecretMFASetupView(SingleObjectMixin, FormView):
 
 @method_decorator(otp_required, name="dispatch")
 @method_decorator(
-    permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")), name="dispatch",
+    permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")),
+    name="dispatch",
 )
 class SecretMFAView(SingleObjectMixin, TemplateView):
     template_name = "secret/mfa.html"
@@ -384,7 +429,8 @@ class SecretMFAView(SingleObjectMixin, TemplateView):
 
 @method_decorator(otp_required, name="dispatch")
 @method_decorator(
-    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="dispatch",
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")),
+    name="dispatch",
 )
 class SecretMFADeleteView(DeleteView):
     model = Secret

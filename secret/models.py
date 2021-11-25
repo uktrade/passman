@@ -26,6 +26,8 @@ class Secret(models.Model):
 
     created_by = models.ForeignKey("user.User", on_delete=models.SET_NULL, null=True)
 
+    deleted = models.BooleanField(default=False)
+
     name = models.CharField(max_length=255)
 
     url = models.URLField(blank=True)
