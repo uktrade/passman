@@ -1,15 +1,18 @@
 import logging
+import io
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import FileResponse, Http404
 from django.views.generic import DeleteView, FormView
-from django.views.generic.base import ContextMixin, TemplateView
+from django.views.generic.base import ContextMixin, TemplateView, View
 from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 
@@ -31,12 +34,13 @@ from .forms import (
     VIEW_SECRET_PERMISSION,
     MFAClientSetupForm,
     SecretCreateForm,
-    SecretUpdateForm,
-    SecretPermissionsForm,
     SecretGroupPermissionsForm,
+    SecretFileUploadForm,
+    SecretPermissionsForm,
+    SecretUpdateForm,
     SecretUserPermissionsForm,
 )
-from .models import Secret
+from .models import Secret, SecretFile
 
 
 logger = logging.getLogger(__name__)
@@ -458,3 +462,139 @@ class SecretMFADeleteView(DeleteView):
         messages.info(request, "MFA client removed")
 
         return redirect(self.get_success_url())
+
+
+@method_decorator(otp_required, name="dispatch")
+@method_decorator(
+    permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")), name="dispatch",
+)
+class SecretFileListView(SingleObjectMixin, TemplateView):
+    template_name = "secret/file_list.html"
+    model = Secret
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tab"] = "files"
+
+        return context
+
+
+@method_decorator(sensitive_post_parameters("file"), name="dispatch")
+@method_decorator(otp_required, name="dispatch")
+@method_decorator(
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="dispatch",
+)
+class SecretFileUploadView(CreateView):
+    form_class = SecretFileUploadForm
+    template_name = "secret/file_upload.html"
+    model = Secret
+
+    def form_valid(self, form):
+        messages.info(self.request, "File uploaded")
+
+        uploaded_file = self.request.FILES["file"]
+
+        file_obj = SecretFile.objects.create(
+            secret=self.get_object(),
+            file_name=uploaded_file.name,
+            file_data=uploaded_file.read(),
+        )
+
+        create_audit_event(self.request.user, Actions.upload_file, secret=self.get_object(), description=uploaded_file.name)
+
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse("secret:file_list", kwargs=dict(pk=self.get_object().pk))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tab"] = "files"
+
+        pk = context["pk"] = self.kwargs["pk"]
+        context["object"] = self.get_object()
+
+        return context
+
+    def get_form_kwargs(self):
+        """Return the keyword arguments for instantiating the form."""
+        kwargs = super().get_form_kwargs()
+
+        kwargs.pop("instance")
+
+        return kwargs
+
+
+class FileObjectMixin:
+    file_obj = None
+
+    def _get_file_object(self):
+
+        if not self.file_obj:
+            try:
+                self.file_obj = self.get_object().files.get(pk=self.kwargs["file_pk"])
+            except SecretFile.DoesNotExist:
+                raise Http404("File does not exist")
+
+        return self.file_obj
+
+
+@method_decorator(otp_required, name="dispatch")
+@method_decorator(
+    permission_required_or_403("secret.change_secret", (Secret, "pk", "pk")), name="dispatch",
+)
+class SecretFileDeleteView(FileObjectMixin, DeleteView):
+    model = Secret
+    template_name = "secret/file_delete.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        pk = context["pk"] = self.kwargs["pk"]
+        context["object"] = self.get_object()
+
+        context["file"] = self._get_file_object()
+
+        context["tab"] = "files"
+
+        return context
+
+    def get_success_url(self):
+        return reverse("secret:file_list", kwargs=dict(pk=self.object.pk))
+
+    def delete(self, request, *args, **kwargs):
+
+        file_obj = self._get_file_object()
+        create_audit_event(self.request.user, Actions.delete_file, secret=self.object, description=file_obj.file_name)
+
+        file_obj.delete()
+
+        messages.info(request, "File deleted")
+
+        return redirect(self.get_success_url())
+
+
+@method_decorator(sensitive_post_parameters("file"), name="dispatch")
+@method_decorator(otp_required, name="dispatch")
+@method_decorator(
+    permission_required_or_403("secret.view_secret", (Secret, "pk", "pk")), name="dispatch",
+)
+class SecretFileDownloadView(FileObjectMixin, SingleObjectMixin, View):
+    model = Secret
+
+    def get(self, request, *args, **kwargs):
+        secret = self.get_object()
+
+        file_obj = self._get_file_object()
+
+        create_audit_event(self.request.user, Actions.download_file, secret=secret, description=file_obj.file_name)
+
+        return FileResponse(io.BytesIO(file_obj.file_data), filename=file_obj.file_name, as_attachment=True)

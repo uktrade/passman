@@ -18,6 +18,9 @@ class Actions(StrEnum):
     setup_mfa = "Set up MFA client"
     delete_mfa = "Delete MFA client"
     generate_mfa_token = "Generate MFA token"
+    download_file = "Download file"
+    upload_file = "Upload file"
+    delete_file = "Delete file"
 
 
 class Audit(models.Model):

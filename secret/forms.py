@@ -226,3 +226,26 @@ class MFAClientSetupForm(forms.Form):
                 return decoded[0].data.decode("utf-8")
 
         return None
+
+
+class SecretFileUploadForm(forms.Form):
+    file = forms.FileField(
+        label="file",
+        required=True,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Field("file"),
+            FormActions(
+                Submit("Upload", "Upload"),
+            ),
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        return cleaned_data

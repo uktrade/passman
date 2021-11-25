@@ -1,4 +1,5 @@
 import pytest
+from io import BytesIO
 import re
 from urllib.parse import quote_plus
 
@@ -8,8 +9,8 @@ from django.utils import timezone
 from guardian.shortcuts import assign_perm, get_perms
 
 from audit.models import Actions, Audit
-from secret.models import Secret
-from secret.tests.factories import SecretFactory
+from secret.models import Secret, SecretFile
+from secret.tests.factories import SecretFactory, SecretFileFactory
 from user.tests.factories import UserFactory, otp_verify_user, GroupFactory
 
 pytestmark = pytest.mark.django_db
@@ -25,6 +26,10 @@ def login_and_verify_user(client, verify=True, **extra_user_args):
 
     return user
 
+
+def _auth_link(current_url):
+    qs = "?next=" + quote_plus(current_url)
+    return reverse("authbroker_client:login") + qs
 
 class TestListView:
     def test_auth_required(self, client):
@@ -763,3 +768,285 @@ class TestMFAClientDelete:
         assert response.status_code == 302
         assert response.url == reverse("secret:mfa", kwargs={"pk": secret.pk})
         assert not secret.mfa_string
+
+
+class TestFileList:
+    def test_page_required_auth(self, client):
+        secret = SecretFactory()
+
+        url = reverse("secret:file_list", kwargs={"pk": secret.pk})
+
+        response = client.get(url)
+
+        assert response.status_code == 302
+        assert response.url == _auth_link(url)
+
+    def test_requires_2fa(self, client):
+        login_and_verify_user(client, verify=False)
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:file_list", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_requires_permissions(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        response = client.post(reverse("secret:file_list", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_view_page(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:file_list", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 200
+        assert "secret/file_list.html" in [tmpl.name for tmpl in response.templates]
+
+
+class TestFileAdd:
+    def test_page_required_auth(self, client):
+        secret = SecretFactory()
+
+        url = reverse("secret:file_add", kwargs={"pk": secret.pk})
+
+        response = client.get(url)
+
+        assert response.status_code == 302
+        assert response.url == _auth_link(url)
+
+        url = reverse("secret:file_add", kwargs={"pk": secret.pk})
+
+        response = client.post(url, {"name": "hamster.jpg", "file": "some-data"})
+
+        assert response.status_code == 302
+        assert response.url == _auth_link(url)
+
+    def test_requires_2fa(self, client):
+        login_and_verify_user(client, verify=False)
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:file_add", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_requires_permissions(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        response = client.post(reverse("secret:file_add", kwargs={"pk": secret.pk}))
+
+        assert response.status_code == 403
+
+    def test_upload_file(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        file_content = b"Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+        file_name = "my-test-file.txt"
+
+        url = reverse("secret:file_add", kwargs={"pk": secret.pk})
+
+        response = client.get(url)
+
+        assert response.status_code == 200
+        assert SecretFile.objects.count() == 0
+
+        fp = BytesIO(file_content)
+        fp.name = file_name
+
+        response = client.post(url, {"file": fp})
+
+        assert response.url == reverse("secret:file_list", kwargs={"pk": secret.pk})
+        assert SecretFile.objects.count() == 1
+        file_ = SecretFile.objects.first()
+
+        assert file_.file_name == file_name
+        assert file_.file_data == file_content
+
+    def test_audit(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("change_secret", user, secret)
+
+        url = reverse("secret:file_add", kwargs={"pk": secret.pk})
+
+        file_name = "my-test-file.txt"
+        fp = BytesIO(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+        fp.name = file_name
+
+        response = client.post(url, {"file": fp})
+        assert secret.audit_set.count() == 1
+        audit = secret.audit_set.first()
+        assert audit.user == user
+        assert audit.description == file_name
+
+
+class TestFileDelete:
+    def test_page_required_auth(self, client):
+        secret = SecretFactory()
+        file_ = SecretFileFactory(secret=secret)
+
+        url = reverse("secret:file_delete", kwargs={"pk": secret.pk, "file_pk": file_.pk})
+
+        response = client.get(url)
+
+        assert response.status_code == 302
+        assert response.url == _auth_link(url)
+
+        response = client.post(url)
+
+        assert response.status_code == 302
+        assert response.url == _auth_link(url)
+
+    def test_requires_2fa(self, client):
+        login_and_verify_user(client, verify=False)
+        secret = SecretFactory()
+        file_ = SecretFileFactory(secret=secret)
+
+        response = client.get(reverse("secret:file_delete", kwargs={"pk": secret.pk, "file_pk": file_.pk}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_requires_permissions(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+        file_ = SecretFileFactory(secret=secret)
+
+        response = client.post(reverse("secret:file_delete", kwargs={"pk": secret.pk, "file_pk": file_.pk}))
+
+        assert response.status_code == 403
+
+        # requires change_secret perm
+        assign_perm("view_secret", user, secret)
+
+        response = client.post(reverse("secret:file_delete", kwargs={"pk": secret.pk, "file_pk": file_.pk}))
+
+        assert response.status_code == 403
+
+    def test_delete_file_success(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+        file_ = SecretFileFactory(secret=secret)
+
+        assign_perm("change_secret", user, secret)
+
+        url = reverse("secret:file_delete", kwargs={"pk": secret.pk, "file_pk": file_.pk})
+        response = client.get(url)
+
+        assert response.status_code == 200
+        assert "secret/file_delete.html" in [tmpl.name for tmpl in response.templates]
+
+        response = client.post(url)
+
+        assert response.status_code == 302
+        assert response.url == reverse("secret:file_list", kwargs={"pk": secret.pk})
+        assert not SecretFile.objects.filter(pk=file_.pk).exists()
+
+    def test_audit(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+        file_ = SecretFileFactory(secret=secret)
+
+        assign_perm("change_secret", user, secret)
+
+        response = client.post(reverse("secret:file_delete", kwargs={"pk": secret.pk, "file_pk": file_.pk}))
+
+        assert secret.audit_set.count() == 1
+        audit = secret.audit_set.first()
+        assert audit.user == user
+        assert audit.description == file_.file_name
+
+
+class TestFileDownload:
+    def test_page_required_auth(self, client):
+        secret = SecretFactory()
+        file_ = SecretFileFactory(secret=secret)
+
+        url = reverse("secret:file_download", kwargs={"pk": secret.pk, "file_pk": file_.pk})
+
+        response = client.get(url)
+
+        assert response.status_code == 302
+        assert response.url == _auth_link(url)
+
+    def test_requires_2fa(self, client):
+        user = login_and_verify_user(client, verify=False)
+        secret = SecretFactory()
+
+        response = client.get(reverse("secret:file_download", kwargs={"pk": secret.pk, "file_pk": 1}))
+
+        assert response.status_code == 302
+        assert response.url.startswith(reverse("twofactor:verify"))
+
+    def test_requires_permissions(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+        file_ = SecretFileFactory(secret=secret)
+
+        response = client.get(reverse("secret:file_download", kwargs={"pk": secret.pk, "file_pk": file_.pk}))
+
+        assert response.status_code == 403
+
+    def test_404_if_file_does_not_exist(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:file_download", kwargs={"pk": secret.pk, "file_pk": 100}))
+
+        assert response.status_code == 404
+
+    def test_cannot_download_file_from_different_secret(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+
+        another_secret = SecretFactory()
+        file_ = SecretFileFactory(secret=another_secret)
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:file_download", kwargs={"pk": secret.pk, "file_pk": file_.pk}))
+
+        assert response.status_code == 404
+
+    def test_success(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+        file_ = SecretFileFactory(secret=secret)
+
+        assign_perm("view_secret", user, secret)
+
+        response = client.get(reverse("secret:file_download", kwargs={"pk": secret.pk, "file_pk": file_.pk}))
+
+        assert response.status_code == 200
+        assert response["Content-Disposition"] == f'attachment; filename="{file_.file_name}"'
+        assert file_.file_data == [item for item in response][0]
+
+    def test_audit(self, client):
+        user = login_and_verify_user(client)
+        secret = SecretFactory()
+        file_ = SecretFileFactory(secret=secret)
+
+        assign_perm("view_secret", user, secret)
+
+        assert secret.audit_set.count() == 0
+
+        response = client.get(reverse("secret:file_download", kwargs={"pk": secret.pk, "file_pk": file_.pk}))
+
+        assert secret.audit_set.count() == 1
+        audit = secret.audit_set.first()
+        assert audit.user == user
+        assert audit.description == file_.file_name

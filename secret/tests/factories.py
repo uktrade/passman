@@ -10,3 +10,11 @@ class SecretFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = "secret.Secret"
+
+
+class SecretFileFactory(factory.django.DjangoModelFactory):
+    file_name = factory.Sequence(lambda n: f"file-{n+1}")
+    file_data = b"This is a test file"
+
+    class Meta:
+        model = "secret.SecretFile"

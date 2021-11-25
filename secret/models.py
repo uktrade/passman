@@ -97,6 +97,14 @@ class Secret(models.Model):
         return None if not otp else otp.now()
 
 
+class SecretFile(models.Model):
+    secret = models.ForeignKey(Secret, related_name="files", on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+
+    file_name = models.CharField(max_length=255)
+    file_data = encrypt(models.BinaryField(null=True))
+
+
 class SecretUserObjectPermission(UserObjectPermissionBase):
     content_object = models.ForeignKey(Secret, on_delete=models.CASCADE)
 
