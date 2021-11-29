@@ -119,6 +119,15 @@ class SecretDeleteView(DeleteView):
 
         return redirect(success_url)
 
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        context["pk"] = self.kwargs["pk"]
+        context["tab"] = "delete"
+
+        return context
+
 
 @method_decorator(sensitive_post_parameters("password", "details"), name="dispatch")
 @method_decorator(otp_required, name="dispatch")
