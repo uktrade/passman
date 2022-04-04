@@ -145,7 +145,7 @@ packaging==20.8
     #   pytest-sugar
 pathspec==0.8.1
     # via black
-pillow==9.0.0
+pillow==9.1.0
     # via -r requirements.txt
 pluggy==0.13.1
     # via pytest
