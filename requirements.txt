@@ -54,7 +54,7 @@ idna==2.10
     # via requests
 kubi-ecs-logger==0.1.0
     # via django-log-formatter-ecs
-lxml==4.7.1
+lxml==4.9.1
     # via -r requirements.in
 marshmallow==3.6.1
     # via kubi-ecs-logger
