@@ -1,0 +1,1 @@
+{"buildTargets":["activate-ve","compile-requirements","create-db","create-env-file","install-git-hooks","install-requirements","install-setup-deps","make","make-virtualenv","runserver","setup-project","uONESHELL"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
