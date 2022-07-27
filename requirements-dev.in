@@ -16,10 +16,10 @@ flake8-debugger
 flake8-mutable
 flake8-print
 
-black
+black>=22.6.0 
 pre-commit
 isort
 codecov
 
 lxml
-mohawk==1.1.0
+mohawk>=1.1.0

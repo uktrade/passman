@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/shehzad/passman'
+pip install pip-tools
+make: Leaving directory `/Users/shehzad/passman'
+ 
