@@ -27,7 +27,7 @@ class UserAdmin(BaseUserAdmin):
     add_form = UserCreationForm
 
     list_display = ("email", "is_superuser", "is_active")
-    list_filter = ("is_superuser", "is_active")
+    list_filter = ("is_superuser", "is_active", "groups")
 
     autocomplete_fields = ("groups",)
 
