@@ -143,7 +143,7 @@ packaging==20.8
     #   pytest-sugar
 pathspec==0.9.0
     # via black
-pillow==9.1.1
+pillow==9.3.0
     # via -r requirements.txt
 platformdirs==2.5.2
     # via black
@@ -238,6 +238,8 @@ toml==0.10.2
     #   pre-commit
     #   pytest
 tomli==2.0.1
+    # via black
+typing-extensions==4.4.0
     # via black
 urllib3==1.26.5
     # via
