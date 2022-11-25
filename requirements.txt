@@ -60,7 +60,7 @@ marshmallow==3.6.1
     # via kubi-ecs-logger
 oauthlib==3.1.0
     # via requests-oauthlib
-pillow==9.1.1
+pillow==9.3.0
     # via -r requirements.in
 psycopg2==2.8.6
     # via -r requirements.in
