@@ -14,7 +14,7 @@ attrs==20.3.0
     # via pytest
 black==22.6.0
     # via -r requirements-dev.in
-certifi==2020.12.5
+certifi==2022.12.7
     # via
     #   -r requirements.txt
     #   requests
