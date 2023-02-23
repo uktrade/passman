@@ -19,6 +19,6 @@ whitenoise
 gunicorn
 
 # pinned transient dependencies
-cryptography>=3.3.2
+cryptography>=39.0.1
 lxml>=4.9.1
 certifi==2022.12.7
