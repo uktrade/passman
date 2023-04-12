@@ -2,6 +2,8 @@ version: 2.1
 jobs:
   build:
     docker:
+      # If we upgrade python for this code base we can probably lose
+      # the pip upgrade in the install dependencies step below
       - image: circleci/python:3.8.3
       - image: postgres:12.3
         environment:
@@ -28,6 +30,9 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            pip --version
+            python3 -m pip install --upgrade pip
+            pip --version
             pip install -r requirements-dev.txt
 
       - save_cache:
