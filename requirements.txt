@@ -91,7 +91,7 @@ sqlparse==0.4.3
     # via django
 typing-extensions==4.5.0
     # via qrcode
-urllib3==1.26.15
+urllib3==1.26.17
     # via
     #   requests
     #   sentry-sdk
