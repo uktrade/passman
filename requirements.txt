@@ -65,7 +65,7 @@ oauthlib==3.2.2
     # via requests-oauthlib
 packaging==23.0
     # via marshmallow
-pillow==9.4.0
+pillow==10.0.1
     # via -r requirements.in
 psycopg2==2.9.5
     # via -r requirements.in
