@@ -37,7 +37,7 @@ coverage==5.4
     # via
     #   codecov
     #   pytest-cov
-cryptography==40.0.1
+cryptography==41.0.4
     # via
     #   -r requirements.txt
     #   django-cryptography
