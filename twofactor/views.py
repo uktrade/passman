@@ -2,7 +2,7 @@ from functools import partial
 import io
 
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.views import SuccessURLAllowedHostsMixin
+from django.contrib.auth.views import RedirectURLMixin
 from django.contrib import messages
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.urls import reverse_lazy
@@ -63,7 +63,7 @@ class TwoFactorEnrollView(FormView):
         return super().form_valid(form)
 
 
-class TwoFactorVerifyView(SuccessURLAllowedHostsMixin, FormView):
+class TwoFactorVerifyView(RedirectURLMixin, FormView):
     form_class = OTPTokenForm
     template_name = "twofactor/verify.html"
     success_url = reverse_lazy("secret:list")

@@ -10,10 +10,10 @@ services:
     image: "postgres:10"
     restart: always
     environment:
-      - POSTGRESS_PASSWORD=does-it-really-matter
+      - POSTGRES_PASSWORD=does-it-really-matter
       - POSTGRES_USER=postgres
       - POSTGRES_DB=passman
-    volumes:
+volumes:
      - passman-data:/var/lib/postgresql/data
     ports:
      - 5432:5432
@@ -24,7 +24,7 @@ services:
     tty: true
     env_file:
       - .env
-    environment:
+environment:
       - DATABASE_URL=postgres://postgres@db/passman
     environment:
       - PYTHONUNBUFFERED=0

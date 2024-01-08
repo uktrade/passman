@@ -17,9 +17,9 @@ flake8-mutable
 flake8-print
 
 black>=22.6.0 
-pre-commit
+pre-commit==3.5.0
 isort
-codecov
+codecov==2.1.13
 
 lxml
 mohawk>=1.1.0

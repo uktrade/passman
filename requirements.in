@@ -1,7 +1,7 @@
 django-environ
 dj-database-url
 psycopg2
-django-staff-sso-client
+django-staff-sso-client==4.2.1
 django-crispy-forms
 django-filter
 django-cryptography
@@ -16,7 +16,7 @@ whitenoise
 gunicorn
 
 # pinned transient dependencies
-django==3.2
+django==4.2.8
 cryptography>=39.0.1
 lxml>=4.9.1
 sentry-sdk==1.14.0
