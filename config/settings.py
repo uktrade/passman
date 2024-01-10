@@ -32,7 +32,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -190,7 +189,8 @@ GUARDIAN_RENDER_403 = True
 
 # OTP / 2FA config
 
-REQUIRE_2FA = True
+# REQUIRE_2FA = True
+REQUIRE_2FA = env("TWO_FACTOR_AUTH", default=True)
 OTP_LOGIN_URL = reverse_lazy("twofactor:verify")
 OTP_HOTP_ISSUER = env("OTP_HOTP_ISSUER", default="Passman")
 OTP_TOTP_ISSUER = OTP_HOTP_ISSUER
