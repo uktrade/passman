@@ -15,6 +15,7 @@ exclude = '''
   | build
   | dist
   | .venv
+  | .vscode
 
   # The following are specific to Black, you probably don't want those.
   | blib2to3
@@ -32,7 +33,7 @@ license = "MIT"
 packages = [{include = "secret"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 appdirs = "1.4.4"
@@ -61,7 +62,7 @@ django-log-formatter-ecs = "0.0.5"
 django-otp = "1.0.2"
 django-staff-sso-client = "4.2.1"
 factory-boy = "3.2.0"
-faker = "5.8.0"
+faker = "20.0.0"
 filelock = "3.0.12"
 flake8 = "3.8.4"
 flake8-blind-except = "0.2.0"
@@ -95,7 +96,7 @@ pycparser = "2.20"
 pyflakes = "2.2.0"
 pyotp = "2.4.1"
 pyparsing = "2.4.7"
-pytest = "6.2.2"
+pytest = "7.3.1"
 pytest-cov = "2.11.1"
 pytest-django = "4.1.0"
 pytest-env = "0.6.2"
@@ -119,6 +120,7 @@ tomli = "2.0.1"
 urllib3 = "1.26.18"
 virtualenv = "20.4.0"
 whitenoise = "5.2.0"
+
 
 [build-system]
 requires = ["poetry-core"]
