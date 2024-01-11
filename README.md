@@ -73,7 +73,11 @@ If that does not work:
     create database passman;
     ```
 
-6. Run `poetry shell` to activate local shell, then run: 
+#. If running pytest locally is required, you will need to create a 'postgres' superuser within passman database if it does not already exist:
+
+    CREATE USER postgres SUPERUSER;
+
+6. Run `poetry shell` to activate local shell, then to populate passman database run: 
   ./manage.py migrate
 
 7. To create a superuser, enter ``./manage.py shell`` and execute the following:

@@ -118,6 +118,9 @@ class SecretDeleteView(DeleteView):
         messages.info(self.request, "Secret deleted")
 
         return redirect(success_url)
+    
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
 
@@ -471,6 +474,9 @@ class SecretMFADeleteView(DeleteView):
         messages.info(request, "MFA client removed")
 
         return redirect(self.get_success_url())
+    
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
 
 
 @method_decorator(otp_required, name="dispatch")
@@ -589,6 +595,9 @@ class SecretFileDeleteView(FileObjectMixin, DeleteView):
         messages.info(request, "File deleted")
 
         return redirect(self.get_success_url())
+    
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
 
 
 @method_decorator(sensitive_post_parameters("file"), name="dispatch")
