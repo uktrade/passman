@@ -5,7 +5,7 @@ jobs:
       # If we upgrade python for this code base we can probably lose
       # the pip upgrade in the install dependencies step below
       - image: circleci/python:3.8.3
-      - image: postgres:12.3
+      - image: postgres:15.2
         environment:
           POSTGRES_DB: secrets
           POSTGRES_HOST_AUTH_METHOD: trust
