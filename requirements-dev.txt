@@ -143,7 +143,7 @@ packaging==20.8
     #   pytest-sugar
 pathspec==0.9.0
     # via black
-pillow==10.1.0
+pillow==10.2.0
     # via -r requirements.txt
 platformdirs==2.5.2
     # via black
