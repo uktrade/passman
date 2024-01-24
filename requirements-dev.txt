@@ -203,7 +203,7 @@ pyyaml==6.0.1
     # via pre-commit
 pyzbar==0.1.9
     # via -r requirements.txt
-qrcode==7.4.2
+qrcode==7.3.1
     # via -r requirements.txt
 requests==2.31.0
     # via

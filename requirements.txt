@@ -79,7 +79,7 @@ pytz==2023.2
     # via django
 pyzbar==0.1.9
     # via -r requirements.in
-qrcode==7.4.2
+qrcode==7.3.1
     # via -r requirements.in
 requests==2.31.0
     # via requests-oauthlib
