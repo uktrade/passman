@@ -251,3 +251,8 @@ LOGGING = {
         },
     },
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://passman.staging-ci.uktrade.digital',
+    'https://passman.ci.uktrade.digital'
+]

@@ -33,7 +33,7 @@ django==4.2.8
     #   django-staff-sso-client
 django-appconf==1.0.5
     # via django-cryptography
-django-crispy-forms==2.0
+django-crispy-forms==1.10.1
     # via -r requirements.in
 django-cryptography==1.1
     # via -r requirements.in
@@ -65,7 +65,7 @@ oauthlib==3.2.2
     # via requests-oauthlib
 packaging==23.0
     # via marshmallow
-pillow==10.1.0
+pillow==10.2.0
     # via -r requirements.in
 psycopg2==2.9.5
     # via -r requirements.in
@@ -79,7 +79,7 @@ pytz==2023.2
     # via django
 pyzbar==0.1.9
     # via -r requirements.in
-qrcode==7.4.2
+qrcode==7.3.1
     # via -r requirements.in
 requests==2.31.0
     # via requests-oauthlib
