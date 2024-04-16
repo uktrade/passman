@@ -12,7 +12,7 @@ asgiref==3.7.2
     #   django
 attrs==20.3.0
     # via pytest
-black==22.6.0
+black==24.3.0
     # via -r requirements-dev.in
 certifi==2023.7.22
     # via
@@ -37,7 +37,7 @@ coverage==5.4
     # via
     #   codecov
     #   pytest-cov
-cryptography==41.0.6
+cryptography==42.0.4
     # via
     #   -r requirements.txt
     #   django-cryptography
@@ -45,7 +45,7 @@ distlib==0.3.1
     # via virtualenv
 dj-database-url==1.2.0
     # via -r requirements.txt
-django==4.2.8
+django==4.2.11
     # via
     #   -r requirements.txt
     #   django-appconf
@@ -105,7 +105,7 @@ gunicorn==20.1.0
     # via -r requirements.txt
 identify==1.5.13
     # via pre-commit
-idna==3.4
+idna==3.7
     # via
     #   -r requirements.txt
     #   requests
@@ -117,7 +117,7 @@ kubi-ecs-logger==0.1.2
     # via
     #   -r requirements.txt
     #   django-log-formatter-ecs
-lxml==4.9.2
+lxml==4.9.4
     # via
     #   -r requirements-dev.in
     #   -r requirements.txt
@@ -143,7 +143,7 @@ packaging==23.0
     #   pytest-sugar
 pathspec==0.9.0
     # via black
-pillow==10.2.0
+pillow==10.3.0
     # via -r requirements.txt
 platformdirs==2.5.2
     # via black
