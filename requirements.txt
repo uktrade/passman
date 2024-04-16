@@ -53,7 +53,7 @@ django-staff-sso-client==4.2.1
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
-idna==3.4
+idna==3.7
     # via requests
 kubi-ecs-logger==0.1.2
     # via django-log-formatter-ecs
