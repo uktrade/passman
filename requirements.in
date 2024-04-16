@@ -15,8 +15,8 @@ whitenoise
 gunicorn
 
 # pinned transient dependencies
-django==4.2.8
-cryptography==41.0.6
+django==4.2.11
+cryptography==42.0.4
 lxml>=4.9.1
 sentry-sdk==1.14.0
-pillow==10.2.0
+pillow==10.3.0
