@@ -101,7 +101,7 @@ freezegun==1.1.0
     # via
     #   -r requirements-dev.in
     #   pytest-freezegun
-gunicorn==20.1.0
+gunicorn==22.0.0
     # via -r requirements.txt
 identify==1.5.13
     # via pre-commit
@@ -216,7 +216,7 @@ requests-oauthlib==1.3.1
     #   django-staff-sso-client
 sentry-sdk==1.14.0
     # via -r requirements.txt
-six==1.15.0
+six==1.16.0
     # via
     #   -r requirements.txt
     #   flake8-debugger
