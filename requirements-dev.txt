@@ -101,7 +101,7 @@ freezegun==1.1.0
     # via
     #   -r requirements-dev.in
     #   pytest-freezegun
-gunicorn==20.1.0
+gunicorn==22.0.0
     # via -r requirements.txt
 identify==1.5.13
     # via pre-commit
