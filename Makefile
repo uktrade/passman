@@ -1,18 +1,7 @@
 SHELL := /bin/bash
 
-
-install-setup-deps:
-	pip install pip-tools
-
-make-virtualenv:
-	virtualenv --python=python3 venv
-
-compile-requirements:
-	pip-compile -o requirements.txt requirements.in
-	pip-compile -o requirements-dev.txt requirements-dev.in
-
-install-requirements:
-	pip-sync requirements-dev.txt
+all-requirements:
+	poetry export --without-hashes --with dev -f requirements.txt --output requirements.txt
 
 install-git-hooks:
 	pre-commit install

@@ -7,16 +7,16 @@ volumes:
 
 services:
   db:
-    image: "postgres:15.2"
+    image: "postgres:15.5"
     restart: always
     environment:
-      - POSTGRES_PASSWORD=does-it-really-matter
+      - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=passman
     volumes:
-     - passman-data:/var/lib/postgresql/data
+      - passman-data:/var/lib/postgresql/data
     ports:
-     - 5432:5432
+      - 5432:5432
 
   web:
     build: .
@@ -25,7 +25,6 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgres://postgres@db/passman
       - PYTHONUNBUFFERED=0
       - PORT=8000
     volumes:

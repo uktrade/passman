@@ -1,4 +1,4 @@
-FROM python:3.8.2
+FROM python:3.10.14
 
 MAINTAINER tools@digital.trade.gov.uk
 
@@ -16,7 +16,7 @@ WORKDIR /app
 
 COPY . /app
 
-RUN pip install -r /app/requirements-dev.txt
+RUN pip install -r /app/requirements.txt
 
 RUN pip install honcho
 
