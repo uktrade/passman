@@ -4,11 +4,14 @@ jobs:
     docker:
       # If we upgrade python for this code base we can probably lose
       # the pip upgrade in the install dependencies step below
-      - image: circleci/python:3.8.3
-      - image: postgres:15.2
+      - image: python:3.10.14
+      - image: postgres:15.5
         environment:
           POSTGRES_DB: secrets
           POSTGRES_HOST_AUTH_METHOD: trust
+
+    environment:
+      DATABASE_URL: postgres://postgres@localhost:5432/secrets
 
     working_directory: ~/app
 
@@ -18,34 +21,29 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements-dev.txt" }}
+            - v1-dependencies-{{ checksum "requirements.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
+          paths:
+            - ~/cache/pip
 
       # Add ZBAR
-      - run: sudo apt-get --allow-releaseinfo-change update && sudo apt-get install libzbar-dev
+      - run: apt-get update && apt-get -y install libzbar-dev
 
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip --version
-            python3 -m pip install --upgrade pip
-            pip --version
-            pip install -r requirements-dev.txt
+            python -m pip install --cache-dir ~/cache/pip -r requirements.txt
 
       - save_cache:
           paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements-dev.txt" }}
+            - ~/cache/pip
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
 
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
-            env
-            py.test --cov-report xml --cov=.
+            python -m pytest --cov-report xml --cov=.
             codecov
 
       - store_artifacts:
