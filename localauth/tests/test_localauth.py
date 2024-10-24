@@ -17,11 +17,20 @@ def user():
 
 
 class TestLogin:
-    def test_user_can_authenticate(self, client, user):
+    def test_user_incorrect_password(self, client, user):
 
         response = client.post(
             reverse("localauth:login"), {"username": user.email, "password": "letmein2017"}
         )
 
+        assert response.status_code == 200 
+        assert "Your username and password didn\\\'t match. Please try again." in str(response.content)
+
+    def test_user_can_authenticate(self, client, user):
+
+        response = client.post(
+            reverse("localauth:login"), {"username": user.email, "password": "letmein123"}
+        )
+
         assert response.status_code == 302
-        assert response.url == reverse("saml2_logged_in")
+        assert response.url == '/'
