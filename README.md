@@ -144,4 +144,12 @@ If that does not work:
 
     `kubectl config set-context --current --namespace=tools`
 
+# Exec into Kubernetes Pod
 
+1. Follow steps 2-5 in the "Deploy to Staging" section of the readme
+
+2. From the list of pods, find the passman pod
+
+3. Use the following exec command to enter a bash shell within the pod: 
+
+    `kubectl exec <pod_name> -n tools -it -- /bin/bash`
