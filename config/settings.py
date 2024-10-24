@@ -47,11 +47,13 @@ INSTALLED_APPS = [
     "guardian",
     "django_otp",
     "django_otp.plugins.otp_totp",
+    "axes",
     "twofactor",
     "audit",
     "user",
     "secret",
     "core",
+    "localauth",
 ]
 
 MIDDLEWARE = [
@@ -65,6 +67,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.ProtectAllViewsMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -251,5 +254,26 @@ LOGGING = {
         },
     },
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    },
+    "axes_cache": {
+        # See - https://github.com/jazzband/django-axes/blob/master/docs/configuration.rst#cache-problems
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+    },
+}
+
+AXES_CACHE = "axes_cache"
+AXES_ONLY_USER_FAILURES = True
+AXES_VERBOSE = True
+AXES_RESET_ON_SUCCESS = True
+AXES_FAILURE_LIMIT = 3
+
+# Include the local auth page?
+LOCAL_AUTH_PAGE = env.bool("LOCAL_AUTH_PAGE", default=True)
+
+SSO_RECOVERY_USERS = env.list("SSO_RECOVERY_USERS", default=[])
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")

@@ -12,4 +12,5 @@ urlpatterns = [
     path("2fa/", include("twofactor.urls", namespace="twofactor")),
     path("user/", include("user.urls", namespace="user")),
     path("", include("secret.urls", namespace="secret")),
+    path("", include(("localauth.urls", "localauth"), namespace="localauth")),
 ]

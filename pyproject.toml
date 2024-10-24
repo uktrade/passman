@@ -34,6 +34,7 @@ packages = [{include = "secret"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+django-axes = "^7.0.0"
 
 [tool.poetry.group.dev.dependencies]
 appdirs = "1.4.4"

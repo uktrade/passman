@@ -31,6 +31,9 @@ class ProtectAllViewsMiddleware:
 
         if not request.user.is_authenticated:
             # user must sign in
+            if resolve(request.path).route == 'login/':
+                return self.get_response(request)
+
             if (
                 resolve(request.path).app_name != "authbroker_client"
                 and request.path not in public_views

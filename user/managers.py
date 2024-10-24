@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import BaseUserManager
 
 
@@ -10,7 +11,10 @@ class UserManager(BaseUserManager):
             raise ValueError("The Email must be set")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_unusable_password()
+        if password and email in settings.SSO_RECOVERY_USERS:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save()
         return user
 

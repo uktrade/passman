@@ -9,3 +9,5 @@ AUTHBROKER_CLIENT_SECRET=speak-to-webops
 ALLOWED_HOSTS=*
 
 CSRF_TRUSTED_ORIGINS=https://passman.ci.uktrade.digital
+
+LOCAL_AUTH_PAGE=True
