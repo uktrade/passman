@@ -1,48 +1,58 @@
 # Passman
 
+- [Passman](#passman)
+  - [Key features](#key-features)
+  - [Dependencies](#dependencies)
+  - [Set-up local environment /w Poetry](#set-up-local-environment-w-poetry)
+  - [Deploy to Staging](#deploy-to-staging)
+  - [Exec into Kubernetes Pod](#exec-into-kubernetes-pod)
+
 [![uktrade](https://circleci.com/gh/uktrade/passman.svg?style=svg)](https://app.circleci.com/pipelines/github/uktrade/passman) [![codecov](https://codecov.io/gh/uktrade/passman/branch/master/graph/badge.svg)](https://codecov.io/gh/uktrade/passman)
 
-Passman is a simple hosted password manager built to replace Rattic (https://github.com/tildaslash/RatticWeb).
+Passman is a simple hosted password manager built to replace Rattic [Rattic](https://github.com/tildaslash/RatticWeb).
 
 The application should be hosted in a secure environment, preferably behind a VPN, using an encrypted database and end-to-end encryption.
 
-# Key features
+## Key features
 
 - Allows the creation of passwords/secure details which can then be assigned to users and groups
-- It is integrated with DIT's staff-sso app 
+- It is integrated with DIT's staff-sso app
 - An additional 2FA check is required to view secrets
-- Passwords are encrypted using https://github.com/georgemarshall/django-cryptography
-- detailed auditing
+- Passwords are encrypted using [Django-Cryptography](https://github.com/georgemarshall/django-cryptography)
+- Detailed auditing
 
-# Dependencies 
+## Dependencies
 
-- Python 3.8+ 
+- Python 3.8+
 - Postgres 10
 - Zbar
 - Staff-sso [this a DIT specific component]
 
-# Set-up local environment /w Poetry
+## Set-up local environment /w Poetry
 
-1. Clone the repository 
+1. Clone the repository
 
 2. Install poetry, via `pip install -U pip poetry`
 
 3. Install the dependencies:
 
-    ```
+    ```sh
     poetry env use <python install>
+    poetry self add poetry-plugin-shell
     poetry install --with dev
     poetry shell
     ```
 
-#. For MacOS users, `pyzbar` package will required `brew install zbar` and then add DYLD_LIBRARY_PATH added to your `~/.bash_profile`/`~/.zshrc`:
-    `export DYLD_LIBRARY_PATH=$(brew --prefix zbar)/lib:$DYLD_LIBRARY_PATH`
+   **_For MacOS users, `pyzbar` package will required `brew install zbar` and then add DYLD_LIBRARY_PATH added to your `~/.bash_profile`/`~/.zshrc`:
+       `export DYLD_LIBRARY_PATH=$(brew --prefix zbar)/lib:$DYLD_LIBRARY_PATH`
+   _**
 
-If that does not work: 
-  ```
-  $ mkdir ~/lib
-  $ ln -s $(brew --prefix zbar)/lib/libzbar.dylib ~/lib/libzbar.dylib
-  ```
+   If that does not work:
+
+     ```sh
+     mkdir ~/lib
+     ln -s $(brew --prefix zbar)/lib/libzbar.dylib ~/lib/libzbar.dylib
+     ```
 
 4. Create an ``.env`` file (it’s gitignored by default):
     cp sample.env .env
@@ -54,21 +64,21 @@ If that does not work:
 
 5. Create the db:
 
-    ```
+    ```sh
     psql -p5432
     create database passman;
     ```
 
-#. If running pytest locally is required, you will need to create a 'postgres' superuser within passman database if it does not already exist:
+   **_If running pytest locally is required, you will need to create a 'postgres' superuser within passman database if it does not already exist **_
 
-    CREATE USER postgres SUPERUSER;
+   `CREATE USER postgres SUPERUSER;`
 
-6. Run `poetry shell` to activate local shell, then to populate passman database run: 
-  ./manage.py migrate
+6. Run `poetry shell` to activate local shell, then to populate passman database run:
+  `./manage.py migrate`
 
 7. To create a superuser, enter ``./manage.py shell`` and execute the following:
 
-    ```
+    ```sh
     from user.models import User
     u = User()
     u.email = "first.name-00000000@id.trade.gov.uk" #You will need to use your email_user_id email here.
@@ -81,20 +91,18 @@ If that does not work:
     u.save()
     ```
 
-8. Start the passman localhost server, run: 
-	./manage.py runserver
+8. Start the passman localhost server, run:
+   `./manage.py runserver`
 
+## Deploy to Staging
 
+1. Push local branch changes to PR in GitHub, this will automatically trigger a Docker image to be built here:
 
-# Deploy to Staging
-
-1. Push local branch changes to PR in GitHub, this will automatically trigger a Docker image to be built here: 
-
-    https://console.cloud.google.com/gcr/images/sre-docker-registry/global/github.com/uktrade/passman?project=sre-docker-registry
+    [SRE Docker Registry](https://console.cloud.google.com/gcr/images/sre-docker-registry/global/github.com/uktrade/passman?project=sre-docker-registry)
 
 2. Setup Pritunl staging VPN:
     - Go to Passman (Prod) and search for vpn.staging-ci.uktrade.digital.
-    - Navigate to https://vpn.staging-ci.uktrade.digital/
+    - Navigate to [PriTunl Staging](https://vpn.staging-ci.uktrade.digital/)
     - Use the username & password given in Passman
     - In Pritunl admin page, go to Users tab and 'Add User'
     - Give name as: firstname.lastname
@@ -108,48 +116,48 @@ If that does not work:
     - Follow the steps in the 'Get credentials' popup window
     - Select 'dev' from the available AWS accounts list in command line
 
-4. Update K8s config using kubectl: 
+4. Update K8s config using kubectl:
 
     `aws eks update-kubeconfig --name staging-ci-uktrade-digital --region eu-west-2 --profile <Use the profile given in step 2 here>`
 
-5. Checks K8S pods to see if passman-staging is running: 
+5. Checks K8S pods to see if passman-staging is running:
 
     `kubectl get pods -n tools`
 
-6. Clone eks-services repo from Gitlab: https://gitlab.ci.uktrade.digital/webops/eks-services
+6. Clone eks-services repo from [GitHub](https://github.com/uktrade/eks-services)
 
 7. Edit passman-stg.yaml file to use your branch's Docker image
     - Edit config/passman-stg.yaml
-    - Go to image and change tag to you branch's image tag: 
+    - Go to image and change tag to you branch's image tag:
 
-```
-      containers:
-        - name: passman
-          image: gcr.io/sre-docker-registry/github.com/uktrade/passman:latest
-```
-    
-  to 
+   ```yaml
+         containers:
+           - name: passman
+             image: gcr.io/sre-docker-registry/github.com/uktrade/passman:latest
+   ```
 
-```
-      containers:
-        - name: passman
-          image: gcr.io/sre-docker-registry/github.com/uktrade/passman:<branch_name>
-```  
+     to
+
+   ```yaml
+         containers:
+           - name: passman
+             image: gcr.io/sre-docker-registry/github.com/uktrade/passman:<branch_name>
+   ```
 
 8. In the EKS repo terminal, apply changes using kubectl:
 
     `kubectl apply -f <path_to_file>/passman-stg.yaml`
 
-    Note: May need to do: 
+    Note: May need to do:
 
     `kubectl config set-context --current --namespace=tools`
 
-# Exec into Kubernetes Pod
+## Exec into Kubernetes Pod
 
 1. Follow steps 2-5 in the "Deploy to Staging" section of the readme
 
 2. From the list of pods, find the passman pod
 
-3. Use the following exec command to enter a bash shell within the pod: 
+3. Use the following exec command to enter a bash shell within the pod:
 
     `kubectl exec <pod_name> -n tools -it -- /bin/bash`
